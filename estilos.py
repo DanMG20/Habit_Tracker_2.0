@@ -1,0 +1,1 @@
+FUENTE_TITULO = ("Comic Sans MS", 50, "bold")
