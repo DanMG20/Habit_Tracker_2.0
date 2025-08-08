@@ -3,9 +3,13 @@ from datetime import timedelta
 import locale
 # Establecer el locale a español (puede variar según el sistema operativo)
 locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
-class fechas():
-    def encabezados_fechas():
-            #CONSTANTES
+class Fechas():
+    def __init__(self, db_objeto):
+        self.db_objeto = db_objeto
+
+
+    def encabezados_fechas(self):
+            #CONSTANTESs
             DIA_HOY = datetime.now().day
             FECHA_MANANA = datetime.now() + timedelta(days=1)
             DIA_MANANA =FECHA_MANANA.day
