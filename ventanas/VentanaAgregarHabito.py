@@ -1,109 +1,271 @@
 import customtkinter as ctk 
 import estilos
-from ventanas.ConfigVentana import VentanaComun
 
-class VentanaAgregarHabito (VentanaComun):
-    def __init__(self): 
-        super().__init__()
-        self.nombre_ventana()
+class VentanaAgregarHabito:
+    def __init__(self, master,frames_ventana_principal,db_objeto,fecha_objeto):
+        self.master = master
+        self.frames_vent_principal = frames_ventana_principal
+        self.db_objeto = db_objeto
+        self.fecha_objeto = fecha_objeto
+        #--------------------------------------------VARIABLES-------------------------------------------
+        self.ALTURA_FRAME_RELLENO = 200
+        self.var_seleccionar_todos = ctk.BooleanVar(value=False)
+        self.nombre_ventana_frame_1_0()
         self.crear_frame_izquierdo()
-        self.crear_frame_semana()
+        self.crear_frame_derecho()
+        self.crear_frame_botones_navegacion()
+        #------------------------------------------LISTA FRAMES -------------------------------------------
+        self.frames_agregar_habito = [self.frame_derecho,
+                                      self.frame_izq_agregar_hab,
+                                      self.frame_nombre_ventana_1_0,
+                                      ]
 
-    def nombre_ventana (self):
-        label_nombre_ventana = ctk.CTkLabel(self, text ="AGREGAR HABITO",
-                                    font = estilos.FUENTE_SECUNDARIA,
-                                    fg_color=estilos.COLOR_ENFRENTE)
-        label_nombre_ventana.grid(column =0, row = 1, columnspan = 4, sticky = "nsew",padx= estilos.PADX, pady =estilos.PADY )
+    def crear_frame_derecho(self): 
+        self.frame_derecho = ctk.CTkFrame(self.master, corner_radius=estilos.CORNER_RADIUS)
+        self.frame_derecho.grid(row = 2,
+                                column=1,
+                                columnspan =2,
+                                rowspan = 3,
+                                sticky="nsew",
+                                padx= estilos.PADX,
+                                pady = estilos.PADY)
+        self.frame_derecho.columnconfigure(0, weight=1)
+        self.frame_derecho.rowconfigure(0, weight=1)
+        self.crear_frame_semana()
+        self.crear_frame_botones_navegacion()
+        self.crear_frame_relleno_der()
+          
+    def crear_frame_relleno_der(self):
+        self.frame_relleno_der = ctk.CTkFrame(self.frame_derecho, corner_radius=estilos.CORNER_RADIUS,height = self.ALTURA_FRAME_RELLENO)
+        self.frame_relleno_der.grid(row = 2,
+                                column=0,
+                                sticky="nsew",
+                                padx= estilos.PADX,
+                                pady = estilos.PADY)
+
+    def nombre_ventana_frame_1_0(self):
+        self.frame_nombre_ventana_1_0 = ctk.CTkFrame(self.master, corner_radius=estilos.CORNER_RADIUS)
+        self.frame_nombre_ventana_1_0.grid(row=1,
+                                           column=0,
+                                           columnspan=3,
+                                           sticky="nsew",
+                                           padx=estilos.PADX,
+                                           pady=estilos.PADY)
+        label_nombre_ventana = ctk.CTkLabel(
+            self.frame_nombre_ventana_1_0, 
+            text="AGREGAR HABITO",
+            font=estilos.FUENTE_SUBTITULOS,
+            anchor="center")
+        label_nombre_ventana.pack(
+            fill="both",
+            expand=True,
+            padx=estilos.PADX, 
+            pady=estilos.PADY)
 
     def crear_frame_izquierdo(self):
-        self.frame_izquierdo = ctk.CTkFrame(self)
-        self.frame_izquierdo.grid(column=0, row= 2 , rowspan = 4,sticky = "nsew",padx= estilos.PADX, pady =estilos.PADY )
+        self.frame_izq_agregar_hab = ctk.CTkFrame(self.master)
+        self.frame_izq_agregar_hab.grid(
+            column=0, 
+            row=2, 
+            rowspan=3,
+            sticky="nsew",
+            padx=estilos.PADX,
+            pady=estilos.PADY)
         self.nombre_habito()
         self.color_habito()
         self.configurar_frame_izquierdo()
-        self.crear_frame_botones_navegacion()
+        frame_relleno_izq = ctk.CTkFrame(
+            self.frame_izq_agregar_hab,
+            corner_radius=estilos.CORNER_RADIUS,
+            height = self.ALTURA_FRAME_RELLENO)
+        frame_relleno_izq.grid(row = 4,
+                                column=0,
+                                sticky="nsew",
+                                padx= estilos.PADX,
+                                pady = estilos.PADY)
+
     def configurar_frame_izquierdo(self): 
-        self.frame_izquierdo.columnconfigure(0, weight=1)
-        for fila in range (4):
-            self.frame_izquierdo.rowconfigure(fila, weight=1)
+        self.frame_izq_agregar_hab.columnconfigure(0, weight=1)
+        for fila in range(4):
+            self.frame_izq_agregar_hab.rowconfigure(fila, weight=1)
+
     def configurar_frame_semana(self):
         self.frame_selec_semana.columnconfigure(0, weight=1)
-        for fila in range (3):
-            self.frame_selec_semana.rowconfigure(fila , weight=1)
+        for fila in range(3):
+            self.frame_selec_semana.rowconfigure(fila, weight=1)
 
-    def nombre_habito (self): 
-        #label
-        label_nombre = ctk.CTkLabel(self.frame_izquierdo, text ="INGRESA EL NOMBRE DE TU NUEVO HABITO",
-                                    font = estilos.FUENTE_PEQUEÑA,
-                                    fg_color=estilos.COLOR_ENFRENTE)
-        label_nombre.grid (column = 0 , row = 0, sticky = "nsew",padx= estilos.PADX, pady =estilos.PADY)
-        #Entry 
-        Entry_nombre = ctk.CTkEntry(self.frame_izquierdo,
-                                    font = estilos.FUENTE_PEQUEÑA,
-                                    fg_color=estilos.COLOR_ENFRENTE)
-        Entry_nombre.grid (column = 0 , row = 1, sticky = "nsew",padx= estilos.PADX, pady =estilos.PADY)
-    def color_habito (self): 
-        #label
-        label_nombre = ctk.CTkLabel(self.frame_izquierdo, text ="ELIGE EL COLOR DE TU NUEVO HABITO",
-                                    font = estilos.FUENTE_PEQUEÑA,
-                                    fg_color=estilos.COLOR_ENFRENTE)
-        label_nombre.grid (column = 0 , row = 2, sticky = "nsew",padx= estilos.PADX, pady =estilos.PADY)
-        #frame
-        frame_colores = ctk.CTkFrame(self.frame_izquierdo,)
-        frame_colores.grid(column=0 ,row = 3, sticky="nsew",padx= estilos.PADX, pady =estilos.PADY)
-        #Crear botones colores 
-        for color in estilos.COLORES: 
-            boton_color = ctk.CTkButton(frame_colores,
-                                        fg_color=color,
-                                        width = 60,
-                                        height=60,
-                                        text="")
-            boton_color.pack(side="left",expand= True)
-    def crear_frame_semana (self): 
-        self.frame_selec_semana = ctk.CTkFrame(self)
-        self.frame_selec_semana.grid(column=1, row= 2 ,columnspan =3, rowspan = 3,sticky = "nsew",padx= estilos.PADX, pady =estilos.PADY )
+    def nombre_habito(self): 
+        label_nombre = ctk.CTkLabel(self.frame_izq_agregar_hab, 
+                                    text="INGRESA EL NOMBRE DE TU NUEVO HABITO",
+                                    font=estilos.FUENTE_PEQUEÑA,
+                                    fg_color=estilos.COLOR_FRENTE)
+        label_nombre.grid(column=0, row=0, sticky="nsew", padx=estilos.PADX, pady=estilos.PADY)
+        self.entry_nombre = ctk.CTkEntry(self.frame_izq_agregar_hab,
+                                    font=estilos.FUENTE_PEQUEÑA,
+                                    fg_color=estilos.COLOR_FRENTE)
+        self.entry_nombre.grid(column=0, row=1, sticky="nsew", padx=estilos.PADX, pady=estilos.PADY)
+
+    def color_habito(self): 
+        label_nombre = ctk.CTkLabel(
+            self.frame_izq_agregar_hab, 
+            text="ELIGE EL COLOR DE TU NUEVO HABITO",
+            font=estilos.FUENTE_PEQUEÑA,
+            fg_color=estilos.COLOR_FRENTE
+        )
+        label_nombre.grid(column=0, row=2, sticky="nsew", padx=estilos.PADX, pady=estilos.PADY)
+
+        frame_colores = ctk.CTkFrame(self.frame_izq_agregar_hab)
+        frame_colores.grid(column=0, row=3, sticky="nsew", padx=estilos.PADX, pady=estilos.PADY)
+
+        self.btn_colores_estado = {}   # {color: boton}
+        self.color_seleccionado = None
+
+        for color in estilos.COLORES:
+            boton_color = ctk.CTkButton(
+                frame_colores,
+                fg_color=color,
+                width=60,
+                height=60,
+                text=""
+            )
+            boton_color.pack(side="left", expand=True, padx=5)
+
+            # Guardar botón en el diccionario
+            self.btn_colores_estado[color] = boton_color
+
+            # Comando con lambda que captura color
+            boton_color.configure(command=lambda c=color: self.evento_btn_color(c))
+
+        # Seleccionar por defecto el gris si existe en estilos.COLORES
+        if estilos.COLORES[0] in self.btn_colores_estado:
+            self.evento_btn_color(estilos.COLORES[0])
+
+    def crear_frame_semana(self): 
+        self.frame_selec_semana = ctk.CTkFrame(self.frame_derecho)
+        self.frame_selec_semana.grid(column=0, row=0, sticky="nsew",
+                                    padx=estilos.PADX, pady=estilos.PADY)
         self.dias_repeticion()
         self.configurar_frame_semana()
 
     def dias_repeticion(self):
-        #label
-        label_semana = ctk.CTkLabel(self.frame_selec_semana, text ="DIAS DE LA SEMANA",
-                                    font = estilos.FUENTE_PEQUEÑA,
-                                    fg_color=estilos.COLOR_ENFRENTE)
-        label_semana.grid(column = 0 , row = 0,sticky = "nsew",padx= estilos.PADX, pady =estilos.PADY)
-        # Seleccionar todos 
-        boton_seleccionar_todos = ctk.CTkCheckBox(self.frame_selec_semana, text ="SELECCIONAR TODOS",
+        label_semana = ctk.CTkLabel(self.frame_selec_semana, 
+                                    text="DIAS DE LA SEMANA",
+                                    font=estilos.FUENTE_PEQUEÑA,
+                                    fg_color=estilos.COLOR_FRENTE)
+        label_semana.grid(column=0, row=0, sticky="nsew", padx=estilos.PADX, pady=estilos.PADY)
+        boton_seleccionar_todos = ctk.CTkCheckBox(self.frame_selec_semana, 
+                                                  text="SELECCIONAR TODOS",
+                                                  variable=self.var_seleccionar_todos,
+                                                  command=self.evento_btn_selec_todos,
                                                   font=estilos.FUENTE_PEQUEÑA)
-        boton_seleccionar_todos.grid(column = 0,row = 2,sticky = "e",padx= 40, pady =estilos.PADY)
-        #frame botones
+        boton_seleccionar_todos.grid(column=0, row=2, sticky="e", padx=40, pady=estilos.PADY)
+
         self.frame_dias_semana = ctk.CTkFrame(self.frame_selec_semana)
-        self.frame_dias_semana.grid(column=0 ,row = 1, sticky="nsew",padx= estilos.PADX, pady =estilos.PADY)
+        self.frame_dias_semana.grid(column=0, row=1, sticky="nsew", padx=estilos.PADX, pady=estilos.PADY)
         self.crear_botones_semana()
 
     def crear_botones_semana(self):
-        semana = ("D","L","M","M","J","V","S") 
-        for dia in semana: 
-            boton_color = ctk.CTkButton(self.frame_dias_semana,
-                                        fg_color=estilos.COLOR_BOTONES_SEMANA,
-                                        font=estilos.FUENTE_PEQUEÑA,
-                                        width = 60,
-                                        height=60,
-                                        text=dia)
-            boton_color.pack(side="left",padx = 13,expand =True)
+        # claves únicas: (clave, etiqueta)
+        dias = [("D","D"), ("L","L"), ("Ma","M"), ("Mi","M"), ("J","J"), ("V","V"), ("S","S")]
+
+        self.botones_semana = {}           # {clave: boton}
+        self.estado_botones_semana = {}    # {clave: bool}
+
+        for clave, texto in dias:
+            boton = ctk.CTkButton(
+                self.frame_dias_semana,
+                fg_color=estilos.COLOR_CONTRASTE,
+                font=estilos.FUENTE_PEQUEÑA,
+                width=60,
+                height=60,
+                text=texto
+            )
+            boton.pack(side="left", padx=13, expand=True)
+
+            # estado inicial
+            boton.selected = False
+            self.botones_semana[clave] = boton
+            self.estado_botones_semana[clave] = False
+
+            # comando seguro que captura boton y clave en el momento de creación
+            boton.configure(command=lambda b=boton, k=clave: self.evento_btn_semana(b, k))
+
+        # Checkbox "Seleccionar todos" (variable vinculada)
+        self.var_seleccionar_todos = ctk.BooleanVar(value=False)
+        boton_seleccionar_todos = ctk.CTkCheckBox(
+            self.frame_selec_semana,
+            text="SELECCIONAR TODOS",
+            variable=self.var_seleccionar_todos,
+            command=self.evento_btn_selec_todos,
+            font=estilos.FUENTE_PEQUEÑA
+        )
+        boton_seleccionar_todos.grid(column=0, row=2, sticky="e", padx=40, pady=estilos.PADY)
+
+
     def crear_frame_botones_navegacion(self): 
-        frame_botones_navegacion = ctk.CTkFrame(self)
-        frame_botones_navegacion.grid(column=1,row=5, columnspan=3,sticky="nsew",padx= estilos.PADX, pady =estilos.PADY)
-        frame_botones_navegacion.rowconfigure(0,weight=1)
+        self.frame_botones_navegacion = ctk.CTkFrame(self.frame_derecho)
+        self.frame_botones_navegacion.grid(column=0, row=1, sticky="nsew",
+                                     padx=estilos.PADX, pady=estilos.PADY)
+        
         for columna in range(2):
-            frame_botones_navegacion.columnconfigure(columna, weight=1)
-        boton_cancelar = ctk.CTkButton(frame_botones_navegacion,
+            self.frame_botones_navegacion.columnconfigure(columna, weight=1)
+        boton_cancelar = ctk.CTkButton(self.frame_botones_navegacion,
                                        text="CANCELAR",
-                                       fg_color=estilos.COLOR_BOTONES_SEMANA,
-                                       font=estilos.FUENTE_SECUNDARIA)
-        boton_cancelar.grid(column=0, row = 0,sticky="nsew",padx= estilos.PADX, pady =estilos.PADY )
-        boton_agregar_habito =ctk.CTkButton(frame_botones_navegacion,
-                                            text ="AGREGAR HABITO",
-                                            fg_color=estilos.COLOR_BOTONES_SEMANA,
-                                            font=estilos.FUENTE_SECUNDARIA,)
-        boton_agregar_habito.grid(column=1, row = 0,sticky="nsew",padx= estilos.PADX, pady =estilos.PADY )
-    
+                                       command=self.evento_btn_cancelar,
+                                       fg_color=estilos.COLOR_CONTRASTE,
+                                       font=estilos.FUENTE_SUBTITULOS)
+        boton_cancelar.grid(column=0, row=0, sticky="nsew", padx=estilos.PADX, pady=estilos.PADY)
+        boton_agregar_habito = ctk.CTkButton(self.frame_botones_navegacion,
+                                            text="AGREGAR HABITO",
+                                            fg_color=estilos.COLOR_CONTRASTE,
+                                            command=self.evento_btn_crear_habito,
+                                            font=estilos.FUENTE_SUBTITULOS)
+        boton_agregar_habito.grid(column=1, row=0, sticky="nsew", padx=estilos.PADX, pady=estilos.PADY)
+        
+#----------------------------------------------------EVENTOS-------------------------------------------------------------------------
+
+    def evento_btn_cancelar(self):
+        self.frame_nombre_ventana_1_0.grid_forget()
+        self.frame_derecho.grid_forget()
+        for frame in self.frames_vent_principal: 
+            frame.tkraise()
+
+
+    def evento_btn_semana(self, boton, clave):
+        # alternar estado
+        boton.selected = not boton.selected
+        self.estado_botones_semana[clave] = boton.selected
+
+        if boton.selected:
+            boton.configure(border_width=4, border_color=estilos.COLOR_BORDE)
+        else:
+            boton.configure(border_width=0)  # 0 para quitar borde
+
+    def evento_btn_selec_todos(self):
+        seleccionar = self.var_seleccionar_todos.get()  # True/False
+        for clave, boton in self.botones_semana.items():
+            boton.selected = seleccionar
+            self.estado_botones_semana[clave] = seleccionar
+            if seleccionar:
+                boton.configure(border_width=4, border_color=estilos.COLOR_BORDE)
+            else:
+                boton.configure(border_width=0)
+
+    def evento_btn_color(self, color):
+        # Desmarcar todos
+        for c, boton in self.btn_colores_estado.items():
+            boton.configure(border_width=0)
+
+        # Marcar solo el seleccionado
+        boton_seleccionado = self.btn_colores_estado[color]
+        boton_seleccionado.configure(border_width=4, border_color=estilos.COLOR_BORDE)
+
+        # Guardar en la variable actual
+        self.color_seleccionado = color
+
+    def evento_btn_crear_habito(self):
+        valores = list(self.estado_botones_semana.values())
+        self.db_objeto.crear_habito(self.entry_nombre.get(), valores,self.color_seleccionado)
+        self.entry_nombre.delete(0,"end")
+        self.evento_btn_cancelar()
+        self.master.actualizacion_agregar_habito()

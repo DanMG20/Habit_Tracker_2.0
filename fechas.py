@@ -6,11 +6,11 @@ locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
 class Fechas():
     def __init__(self, db_objeto):
         self.db_objeto = db_objeto
-
+        self.DIA_HOY = datetime.now()
 
     def encabezados_fechas(self):
             #CONSTANTESs
-            DIA_HOY = datetime.now().day
+            
             FECHA_MANANA = datetime.now() + timedelta(days=1)
             DIA_MANANA =FECHA_MANANA.day
             SEMANA_CORRIENTE =FECHA_MANANA.isocalendar().week
@@ -36,8 +36,17 @@ class Fechas():
                 dia = " Sábado "
             mes_encabezado = MES_CORRIENTE
             texto_semana_encabezado = "Semana " + str(SEMANA_CORRIENTE)
-            texto_dia_encabezado = "HOY," + dia + str(DIA_HOY)
+            texto_dia_encabezado = "HOY," + dia + str(self.DIA_HOY.day)
             return texto_dia_encabezado,texto_semana_encabezado,mes_encabezado,ANIO_CORRIENTE
 
-
-
+    def inicio_semana(self):
+        # Ajustar el inicio de la semana al domingo
+            inicio_semana = self.DIA_HOY - timedelta(days=(self.DIA_HOY.weekday() + 1) % 7)
+            return inicio_semana
+    
+    def dias_actuales(self): 
+        dias_actuales = []
+        for dia_indic in range(7):  # Del domingo (0) al sábado (6)
+                dia_semana = self.inicio_semana() + timedelta(days=dia_indic)
+                dias_actuales.append(dia_semana.day)
+        return dias_actuales
