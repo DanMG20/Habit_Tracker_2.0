@@ -4,25 +4,28 @@ import estilos
 class VentanaAgregarHabito:
     def __init__(self, master,frames_ventana_principal,db_objeto,fecha_objeto):
         self.master = master
+        self.default_text_entry  = "Levantarse Temprano, Leer (30 min), Regar las plantas ,etc..."
         self.frames_vent_principal = frames_ventana_principal
         self.db_objeto = db_objeto
         self.fecha_objeto = fecha_objeto
         #--------------------------------------------VARIABLES-------------------------------------------
         self.ALTURA_FRAME_RELLENO = 200
         self.var_seleccionar_todos = ctk.BooleanVar(value=False)
-        self.nombre_ventana_frame_1_0()
-        self.crear_frame_izquierdo()
-        self.crear_frame_derecho()
-        self.crear_frame_botones_navegacion()
+        self.inicializar_frames_agregar_habito()
         #------------------------------------------LISTA FRAMES -------------------------------------------
         self.frames_agregar_habito = [self.frame_derecho,
                                       self.frame_izq_agregar_hab,
                                       self.frame_nombre_ventana_1_0,
                                       ]
+    def inicializar_frames_agregar_habito(self):
+            self.nombre_ventana_frame_1_0()
+            self.crear_frame_izquierdo()
+            self.crear_frame_derecho()
+            self.crear_frame_botones_navegacion()
 
     def crear_frame_derecho(self): 
         self.frame_derecho = ctk.CTkFrame(self.master, corner_radius=estilos.CORNER_RADIUS)
-        self.frame_derecho.grid(row = 2,
+        self.frame_derecho.grid(row = 3,
                                 column=1,
                                 columnspan =2,
                                 rowspan = 3,
@@ -36,7 +39,10 @@ class VentanaAgregarHabito:
         self.crear_frame_relleno_der()
           
     def crear_frame_relleno_der(self):
-        self.frame_relleno_der = ctk.CTkFrame(self.frame_derecho, corner_radius=estilos.CORNER_RADIUS,height = self.ALTURA_FRAME_RELLENO)
+        self.frame_relleno_der = ctk.CTkFrame(
+            self.frame_derecho,
+            corner_radius=estilos.CORNER_RADIUS,
+            height = self.ALTURA_FRAME_RELLENO)
         self.frame_relleno_der.grid(row = 2,
                                 column=0,
                                 sticky="nsew",
@@ -44,8 +50,10 @@ class VentanaAgregarHabito:
                                 pady = estilos.PADY)
 
     def nombre_ventana_frame_1_0(self):
-        self.frame_nombre_ventana_1_0 = ctk.CTkFrame(self.master, corner_radius=estilos.CORNER_RADIUS)
-        self.frame_nombre_ventana_1_0.grid(row=1,
+        self.frame_nombre_ventana_1_0 = ctk.CTkFrame(
+            self.master, 
+            corner_radius=estilos.CORNER_RADIUS)
+        self.frame_nombre_ventana_1_0.grid(row=2,
                                            column=0,
                                            columnspan=3,
                                            sticky="nsew",
@@ -66,7 +74,7 @@ class VentanaAgregarHabito:
         self.frame_izq_agregar_hab = ctk.CTkFrame(self.master)
         self.frame_izq_agregar_hab.grid(
             column=0, 
-            row=2, 
+            row=3, 
             rowspan=3,
             sticky="nsew",
             padx=estilos.PADX,
@@ -98,19 +106,20 @@ class VentanaAgregarHabito:
         label_nombre = ctk.CTkLabel(self.frame_izq_agregar_hab, 
                                     text="INGRESA EL NOMBRE DE TU NUEVO HABITO",
                                     font=estilos.FUENTE_PEQUEÑA,
-                                    fg_color=estilos.COLOR_FRENTE)
+                                    )
         label_nombre.grid(column=0, row=0, sticky="nsew", padx=estilos.PADX, pady=estilos.PADY)
         self.entry_nombre = ctk.CTkEntry(self.frame_izq_agregar_hab,
                                     font=estilos.FUENTE_PEQUEÑA,
-                                    fg_color=estilos.COLOR_FRENTE)
+                                    )
         self.entry_nombre.grid(column=0, row=1, sticky="nsew", padx=estilos.PADX, pady=estilos.PADY)
-
+        self.entry_nombre.insert(0, self.default_text_entry)
+        self.entry_nombre.bind("<FocusIn>",self.on_entry_click) 
+        self.entry_nombre.bind("<FocusOut>", self.on_focusout)
     def color_habito(self): 
         label_nombre = ctk.CTkLabel(
             self.frame_izq_agregar_hab, 
             text="ELIGE EL COLOR DE TU NUEVO HABITO",
             font=estilos.FUENTE_PEQUEÑA,
-            fg_color=estilos.COLOR_FRENTE
         )
         label_nombre.grid(column=0, row=2, sticky="nsew", padx=estilos.PADX, pady=estilos.PADY)
 
@@ -151,7 +160,7 @@ class VentanaAgregarHabito:
         label_semana = ctk.CTkLabel(self.frame_selec_semana, 
                                     text="DIAS DE LA SEMANA",
                                     font=estilos.FUENTE_PEQUEÑA,
-                                    fg_color=estilos.COLOR_FRENTE)
+                                    )
         label_semana.grid(column=0, row=0, sticky="nsew", padx=estilos.PADX, pady=estilos.PADY)
         boton_seleccionar_todos = ctk.CTkCheckBox(self.frame_selec_semana, 
                                                   text="SELECCIONAR TODOS",
@@ -174,7 +183,7 @@ class VentanaAgregarHabito:
         for clave, texto in dias:
             boton = ctk.CTkButton(
                 self.frame_dias_semana,
-                fg_color=estilos.COLOR_CONTRASTE,
+                #fg_color=estilos.COLORES[0],
                 font=estilos.FUENTE_PEQUEÑA,
                 width=60,
                 height=60,
@@ -212,21 +221,23 @@ class VentanaAgregarHabito:
         boton_cancelar = ctk.CTkButton(self.frame_botones_navegacion,
                                        text="CANCELAR",
                                        command=self.evento_btn_cancelar,
-                                       fg_color=estilos.COLOR_CONTRASTE,
+                                       #fg_color=estilos.COLOR_CONTRASTE,
                                        font=estilos.FUENTE_SUBTITULOS)
         boton_cancelar.grid(column=0, row=0, sticky="nsew", padx=estilos.PADX, pady=estilos.PADY)
         boton_agregar_habito = ctk.CTkButton(self.frame_botones_navegacion,
                                             text="AGREGAR HABITO",
-                                            fg_color=estilos.COLOR_CONTRASTE,
+                                            #fg_color=estilos.COLOR_CONTRASTE,
                                             command=self.evento_btn_crear_habito,
                                             font=estilos.FUENTE_SUBTITULOS)
         boton_agregar_habito.grid(column=1, row=0, sticky="nsew", padx=estilos.PADX, pady=estilos.PADY)
         
 #----------------------------------------------------EVENTOS-------------------------------------------------------------------------
-
+    def cambiar_foco(self):
+        self.master.focus_set()
     def evento_btn_cancelar(self):
         self.frame_nombre_ventana_1_0.grid_forget()
         self.frame_derecho.grid_forget()
+        self.cambiar_foco()
         for frame in self.frames_vent_principal: 
             frame.tkraise()
 
@@ -269,3 +280,16 @@ class VentanaAgregarHabito:
         self.entry_nombre.delete(0,"end")
         self.evento_btn_cancelar()
         self.master.actualizacion_agregar_habito()
+        self.master.obj_eliminar_habito.listar_habitos()
+        
+
+    def on_entry_click(self,event):
+        if self.entry_nombre.get() == self.default_text_entry :
+            self.entry_nombre.delete(0, 'end')
+            self.entry_nombre.configure(text_color='gray')
+            
+
+    def on_focusout(self,event):
+        if self.entry_nombre.get() == '':
+            self.entry_nombre.insert(0, self.default_text_entry )
+            self.entry_nombre.configure(text_color='gray')

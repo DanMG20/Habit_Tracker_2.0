@@ -1,10 +1,15 @@
 import os
 import json
 from datetime import datetime
+from CTkMessagebox import CTkMessagebox
 from tkinter import messagebox
+import estilos
+import shutil
+import direcciones
 class Database:
-    def __init__(self):
+    def __init__(self, master):
         self.habitos = self.cargar_habitos()
+        self.master = master
     def cargar_habitos(self):
         if not os.path.exists("json\\Base_de_datos_habitos.json"):
             return []
@@ -67,7 +72,10 @@ class Database:
         # Verificar si el hábito ya fue registrado hoy
         if any(ejec["nombre_habito"] == nombre_habito and ejec["fecha_ejecucion"] == fecha_actual for ejec in
                ejecuciones):
-            messagebox.showinfo("Información", f"El hábito '{nombre_habito}' ya fue completado hoy.")
+            CTkMessagebox(master =self.master,
+            font =estilos.FUENTE_PEQUEÑA,
+            message= ("Información", f"El hábito '{nombre_habito}' ya fue completado hoy."),
+            icon="check", option_1="Aceptar")
             return
 
         # Agregar nuevo registro
@@ -80,4 +88,24 @@ class Database:
 
         # Guardar actualizaciones
         self.guardar_ejecuciones(ejecuciones)
-        messagebox.showinfo("Éxito", f"Se registró como completado el hábito '{nombre_habito}' para hoy.")
+        CTkMessagebox(master =self.master,
+                    font =estilos.FUENTE_PEQUEÑA,
+                    message= ("Éxito", f"Se registró como completado el hábito '{nombre_habito}' para hoy."),
+                    icon="check", option_1="Aceptar")
+    
+
+
+#-------------------------------------RESET
+    def resetear_archivos(self): 
+        direccion = direcciones.obtener_direccion_dir_json()
+        for archivo in os.listdir(direccion):
+            ruta_archivo = os.path.join(direccion, archivo)
+        try:
+            if os.path.isfile(ruta_archivo) or os.path.islink(ruta_archivo):
+                os.unlink(ruta_archivo)  # Borra archivos o enlaces
+            elif os.path.isdir(ruta_archivo):
+                shutil.rmtree(ruta_archivo)  # Borra subcarpetas completas
+        except Exception as e:
+            print(f"No se pudo borrar {ruta_archivo}: {e}")
+
+        print("Directorio limpiado.")

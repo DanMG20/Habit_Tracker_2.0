@@ -6,7 +6,7 @@ import estilos
 
 
 direccion_archivo_posicion_ventana  = Path("json\\posicion_ventana.json")
-
+config_path = Path("json\\configuracion.json")
 def guardar_posicion_ventana(ventana):
     x = ventana.winfo_x()
     y = ventana.winfo_y()
@@ -31,7 +31,6 @@ def cargar_posicion_ventana(ventana):
             screen_height = ventana.winfo_screenheight()
             ventana.geometry(
                 f"800x600+{(screen_width - 800) // 2}+{(screen_height - 600) // 2}")  # Ajusta el tamaño predeterminado si es necesario
-
 
 
 

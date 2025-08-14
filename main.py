@@ -1,5 +1,5 @@
-
 from ventanas.VentanaPrincipal import VentanaPrincipal
+
 def main():
     arranque_ventana = VentanaPrincipal()
     arranque_ventana.mainloop()
