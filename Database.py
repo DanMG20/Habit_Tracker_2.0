@@ -2,10 +2,10 @@ import os
 import json
 from datetime import datetime
 from CTkMessagebox import CTkMessagebox
-from tkinter import messagebox
 import estilos
 import shutil
 import direcciones
+import random
 class Database:
     def __init__(self, master):
         self.habitos = self.cargar_habitos()
@@ -48,8 +48,6 @@ class Database:
         self.guardar_habitos()
         print(f"El hábito '{nombre_habito_nuevo}' ha sido creado con éxito.")
 
-    def eliminar_habito(): 
-        pass
 
 #-----------------------------------------------------EJECUCIONES-----------------------------------------
     def cargar_ejecuciones(self):
@@ -95,17 +93,130 @@ class Database:
     
 
 
-#-------------------------------------RESET
-    def resetear_archivos(self): 
-        direccion = direcciones.obtener_direccion_dir_json()
-        for archivo in os.listdir(direccion):
-            ruta_archivo = os.path.join(direccion, archivo)
-        try:
-            if os.path.isfile(ruta_archivo) or os.path.islink(ruta_archivo):
-                os.unlink(ruta_archivo)  # Borra archivos o enlaces
-            elif os.path.isdir(ruta_archivo):
-                shutil.rmtree(ruta_archivo)  # Borra subcarpetas completas
-        except Exception as e:
-            print(f"No se pudo borrar {ruta_archivo}: {e}")
+#-------------------------------------RESET--------------------------------
 
-        print("Directorio limpiado.")
+    def resetear_archivos(self): 
+        msg = CTkMessagebox(
+            master=self.master,
+            title="Confirmación",
+            message="¿Estás seguro de que deseas restaurar la aplicación? TODOS los archivos y registros serán borrados. Esta acción no se puede deshacer.",
+            font=estilos.FUENTE_PEQUEÑA,
+            icon="question",
+            option_1="No",
+            option_2="Sí"
+        )
+        response = msg.get()
+
+        if response == "Sí":
+            direccion = direcciones.obtener_direccion_dir_json()
+
+            try:
+                # Borrar TODO el directorio de golpe
+                shutil.rmtree(direccion)
+
+                # Volver a crear la carpeta vacía
+                os.makedirs(direccion, exist_ok=True)
+
+                # Mensaje de éxito
+                CTkMessagebox(
+                    master=self.master,
+                    title="Información",
+                    font=estilos.FUENTE_PEQUEÑA,
+                    message="Los registros han sido eliminados. Se reiniciará la aplicación."
+                )
+
+                # Reiniciar la app
+                self.master.reiniciar_app()
+
+            except Exception as e:
+                print(f"No se pudo borrar el directorio {direccion}: {e}")
+                CTkMessagebox(
+                    master=self.master,
+                    title="Error",
+                    font=estilos.FUENTE_PEQUEÑA,
+                    message=f"No se pudo eliminar los archivos: {e}"
+                )
+
+#-----------------------------------------------------FRASES-----------------------------------------
+    def cargar_frases_random(self):
+        if not os.path.exists("json\\frases.json"):
+            frase_default = [{
+                "frase": "Somos lo que hacemos repetidamente. La excelencia, entonces, no es un acto, sino un hábito.",
+                "autor": "Aristóteles",
+                "indice": 1
+            }]
+            with open("json\\frases.json", 'w') as f:
+                json.dump(frase_default, f, indent=4)
+
+        try:
+            with open("json\\frases.json", 'r') as f:
+                frases = json.load(f)
+                self.frases = []
+
+                for frase in frases:
+                    self.frases.append(f"{frase['frase']} - {frase['autor']}") 
+
+
+            if frases:
+                frase_random = random.choice(frases)  # Selección aleatoria
+                self.frase_seleccionada = frase_random["frase"]
+                self.autor_frase = frase_random["autor"]
+                print(self.frase_seleccionada)
+                print(self.autor_frase)
+            else:
+                print("No hay frases registradas.")
+
+        except FileNotFoundError:
+            print("KESTAPASANDO")
+            
+
+    def evento_eliminar_frase_selec(self, frase_seleccionada):
+        """Elimina directamente la frase seleccionada del archivo JSON."""
+        msg = CTkMessagebox(
+            master=self.master,
+            title="Confirmación",
+            message=f"¿Estás seguro de que deseas eliminar la frase '{frase_seleccionada}'?",
+            font=estilos.FUENTE_PEQUEÑA,
+            icon="question", option_1="No", option_2="Sí"
+        )
+        response = msg.get()
+
+        if response == "Sí":
+            ruta_frases = "json\\frases.json"
+
+            # Leer archivo existente
+            if os.path.exists(ruta_frases):
+                with open(ruta_frases, "r") as f:
+                    frases = json.load(f)
+            else:
+                frases = []
+
+            # Separar frase y autor (porque cargar_frases_random las concatena con " - ")
+            if " - " in frase_seleccionada:
+                texto_frase, autor = frase_seleccionada.split(" - ", 1)
+                frases = [
+                    f for f in frases
+                    if f["frase"] != texto_frase or f["autor"] != autor
+                ]
+            else:
+                frases = [
+                    f for f in frases
+                    if f["frase"] != frase_seleccionada
+                ]
+
+            # Guardar cambios en el JSON
+            with open(ruta_frases, "w") as f:
+                json.dump(frases, f, indent=4)
+
+            # Mensaje de confirmación
+            CTkMessagebox(
+                master=self.master,
+                title="Info",
+                font=estilos.FUENTE_PEQUEÑA,
+                message=f"La frase '{frase_seleccionada}' ha sido eliminada."
+            )
+
+            # Recargar frases y regenerar menú
+            self.cargar_frases_random()
+            self.master.mostrar_frase()
+            self.master.generar_menu_frases()

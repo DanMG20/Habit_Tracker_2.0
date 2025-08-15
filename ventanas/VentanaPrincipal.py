@@ -7,6 +7,7 @@ from CTkMenuBar import *
 from ventanas.VentanaAgregarHabito import *
 from ventanas.ConfigVentana import *
 from ventanas.VentanaEliminarHabito import * 
+from ventanas.VentanaAgregarFrase import * 
 from Fechas import Fechas
 from datetime import *
 from Database import Database
@@ -22,6 +23,7 @@ class VentanaPrincipal(ctk.CTk):
         #------------------------------------------OBJETOS----------------------------------------------------------------------------
         self.db_objeto = Database(master=self)
         self.fechas_objeto = Fechas(db_objeto =self.db_objeto)
+        self.db_objeto.cargar_frases_random()
         self.cargar_configuracion()
         #-----------------------------------------VARIABLES---------------------------------------------------------------------------
         self.DIA_HOY = self.fechas_objeto.DIA_HOY
@@ -128,18 +130,34 @@ class VentanaPrincipal(ctk.CTk):
             padx = estilos.PADX,
             pady=(estilos.PADY*2,estilos.PADY),
             )
-        frase_label = ctk.CTkLabel(
+
+
+        self.frame_frase_0_1.grid_rowconfigure(0, weight=1)
+        self.frame_frase_0_1.grid_columnconfigure(0, weight=1)
+        self.mostrar_frase()
+        # ---------- encabezado ----------
+
+        # ---------- frase ----------
+    def mostrar_frase(self):
+        self.label_frase = ctk.CTkLabel(
             self.frame_frase_0_1,
-            text= "Frase del día:\nSomos lo que hacemos - Sócrates",
-            justify= "center",
-            font=estilos.FUENTE_SUBTITULOS,
-            )
-        frase_label.pack(
-            fill="both",
-            expand = True,
-            padx= estilos.PADX,
-            pady= estilos.PADY
-            )
+            text=f"“{self.db_objeto.frase_seleccionada}”",
+            justify="center",
+            wraplength=620,              # ajusta el ancho del texto
+            font=estilos.FUENTE_FRASE
+        )
+        self.label_frase.grid(row=0, column=0, padx=28, pady=(16, 2), sticky="n")
+
+        # ---------- autor ----------
+        self.label_autor = ctk.CTkLabel(
+            self.frame_frase_0_1,
+            text=f"— {self.db_objeto.autor_frase}",
+            font=estilos.FUENTE_AUTOR,
+            text_color=("gray20", "gray70")
+        )
+        self.label_autor.grid(row=1, column=0, padx=18, pady=(0, 16), sticky="n")
+
+
         
     def configuracion_grillado(self): 
         #----------------------------------------------PRINCIPAL
@@ -150,13 +168,20 @@ class VentanaPrincipal(ctk.CTk):
     def barra_menu(self):
         menu = CTkTitleMenu(master=self)
         button_1 = menu.add_cascade("Tema")
-        button_2 = menu.add_cascade("Restaurar")
+        button_2 = menu.add_cascade("Restaurar",
+                                    command =self.db_objeto.resetear_archivos
+                                    )
         button_3 = menu.add_cascade("Frases")
+        self.cascada_boton_3 = CustomDropdownMenu(widget=button_3)
+        self.cascada_boton_3.add_option("Agregar Frase", command=self.evento_agregar_frase)
+        self.submenu_eliminar_frase =self.cascada_boton_3.add_submenu("Eliminar Frase")
+        self.generar_menu_frases()
+
         button_f = menu.add_cascade("Acerca de")
         dropdown = CustomDropdownMenu(widget=button_1)
         
 
-    
+        
         #-------------------------------------CAMBIAR- TEMA -------------------------------
         submenu_1 = dropdown.add_submenu("Apariencia") 
         submenu_2 = dropdown.add_submenu("Tema")
@@ -288,7 +313,7 @@ class VentanaPrincipal(ctk.CTk):
         self.frame_btn_completar = ctk.CTkScrollableFrame(
             self.frame_btn_completar_contenedor,
             corner_radius=estilos.CORNER_RADIUS,
-            #fg_color=estilos.COLOR_FONDO,
+            fg_color=estilos.tema_frame_color,
         )
         self.frame_btn_completar.pack(
             fill="both",
@@ -451,8 +476,6 @@ class VentanaPrincipal(ctk.CTk):
         # Reprogramar la ejecución después de 900,000 ms (15 min)
         self.after(900000, self.actualizar_programa)
     
- 
-  
     def refrescar_tabla_y_fechas(self,event):
         self.inicializar_variables_fechas()
         self.barra_rendimiento.set(self.rendimiento_semanal/100)
@@ -493,9 +516,20 @@ class VentanaPrincipal(ctk.CTk):
         else: 
             self.frame_btn_completar_contenedor.tkraise()
     def evento_cambiar_tema(self,nuevo_tema=None,nuevo_modo =None):
-        self.guardar_configuracion_tema(nuevo_tema=nuevo_tema)
-        self.reiniciar_app()
-    
+        msg = CTkMessagebox(
+        master = self ,
+        title="Confirmación",
+        message=f"¿Estás seguro de que deseas cambiar el tema a '{nuevo_tema}'? \n es necesario reiniciar la aplicación",
+        font =estilos.FUENTE_PEQUEÑA,
+        icon="question", option_1="No", option_2="Sí")
+        response =  msg.get()
+        if response == "Sí":
+            self.guardar_configuracion_tema(nuevo_tema=nuevo_tema)
+            self.reiniciar_app()
+
+    def evento_agregar_frase(self):
+        self.ventana_agregar_frase_objeto = VentanaAgregarFrase(master=self,db_objeto=self.db_objeto, fecha_objeto= self.fechas_objeto)
+        
 #------------------------------Configura los botones para navegar entre semanas---------------------------------------------------
 
     
@@ -525,7 +559,7 @@ class VentanaPrincipal(ctk.CTk):
                     self.mensaje_no_habitos = ctk.CTkLabel(
                         self.frame_btn_completar,
                         text="No hay hábitos registrados.",
-                        fg_color=estilos.COLOR_FRENTE,
+                        fg_color=estilos.tema_frame_color,
                         text_color=estilos.COLOR_BORDE,
                         font=estilos.FUENTE_PEQUEÑA
                     )
@@ -734,3 +768,20 @@ class VentanaPrincipal(ctk.CTk):
                 "TEMA_SELECCIONADO": self.TEMA_SELECCIONADO,
                 "MODO_APARIENCIA": self.MODO_APARIENCIA,
             }, f, indent=4)
+
+    def generar_menu_frases(self):
+        
+       
+        self.set_frases = set()  # Crear set vacío
+        for frase in self.db_objeto.frases:
+            self.set_frases.add(frase)  # Agrega solo frases únicas
+
+        # Limpiar menú antes de agregar para evitar duplicados al regenerar
+        self.submenu_eliminar_frase.clean() 
+        
+
+        # Agregar opciones únicas al menú
+        for frase_unica in self.set_frases:
+            self.submenu_eliminar_frase.add_option(
+                option=frase_unica, 
+                command= lambda f = frase_unica :self.db_objeto.evento_eliminar_frase_selec(f))

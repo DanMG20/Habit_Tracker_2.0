@@ -1,146 +1,6 @@
 [
     {
-        "nombre_habito": "Mimir",
-        "dias_ejecucion": [
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true
-        ],
-        "Fecha_creacion": "2025-08-13",
-        "color": "#ffec99"
-    },
-    {
-        "nombre_habito": "asdasd",
-        "dias_ejecucion": [
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true
-        ],
-        "Fecha_creacion": "2025-08-13",
-        "color": "#b2f2bb"
-    },
-    {
-        "nombre_habito": "asdsaddasd",
-        "dias_ejecucion": [
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false
-        ],
-        "Fecha_creacion": "2025-08-13",
-        "color": "#ffc9c9"
-    },
-    {
-        "nombre_habito": "asdasdasdas",
-        "dias_ejecucion": [
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false
-        ],
-        "Fecha_creacion": "2025-08-13",
-        "color": "#a5d8ff"
-    },
-    {
-        "nombre_habito": "Dormir Bien riko",
-        "dias_ejecucion": [
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true
-        ],
-        "Fecha_creacion": "2025-08-14",
-        "color": "#D72638"
-    },
-    {
-        "nombre_habito": "ajsdlakljkds",
-        "dias_ejecucion": [
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true
-        ],
-        "Fecha_creacion": "2025-08-14",
-        "color": "#0057E7"
-    },
-    {
-        "nombre_habito": "sadlksadlksdjksadlkj",
-        "dias_ejecucion": [
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true
-        ],
-        "Fecha_creacion": "2025-08-14",
-        "color": "#00A86B"
-    },
-    {
-        "nombre_habito": "ashsdaksadsadhjlasd",
-        "dias_ejecucion": [
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true
-        ],
-        "Fecha_creacion": "2025-08-14",
-        "color": "#FF6F00"
-    },
-    {
-        "nombre_habito": "asasjsdjsdjldsldjdjds",
-        "dias_ejecucion": [
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true
-        ],
-        "Fecha_creacion": "2025-08-14",
-        "color": "#6A0DAD"
-    },
-    {
-        "nombre_habito": "Dormir Tema",
-        "dias_ejecucion": [
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true
-        ],
-        "Fecha_creacion": "2025-08-14",
-        "color": "#3B6BA5"
-    },
-    {
-        "nombre_habito": "ASJDKHASLKHAJD",
+        "nombre_habito": "Postularme para 7 vacantes ",
         "dias_ejecucion": [
             true,
             true,
@@ -154,7 +14,7 @@
         "color": "#B23A48"
     },
     {
-        "nombre_habito": "asjsadhasdjlasjlkasd",
+        "nombre_habito": "Levantarme Temprano",
         "dias_ejecucion": [
             true,
             true,
@@ -165,20 +25,6 @@
             true
         ],
         "Fecha_creacion": "2025-08-14",
-        "color": "#CC7722"
-    },
-    {
-        "nombre_habito": "djdsfahlafdlhfsdjsldfjsfd",
-        "dias_ejecucion": [
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true
-        ],
-        "Fecha_creacion": "2025-08-14",
-        "color": "#7E5A9B"
+        "color": "#B23A48"
     }
 ]

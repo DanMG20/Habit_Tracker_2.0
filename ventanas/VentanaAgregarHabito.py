@@ -42,6 +42,7 @@ class VentanaAgregarHabito:
         self.frame_relleno_der = ctk.CTkFrame(
             self.frame_derecho,
             corner_radius=estilos.CORNER_RADIUS,
+            fg_color=estilos.tema_frame_color,
             height = self.ALTURA_FRAME_RELLENO)
         self.frame_relleno_der.grid(row = 2,
                                 column=0,
@@ -85,6 +86,7 @@ class VentanaAgregarHabito:
         frame_relleno_izq = ctk.CTkFrame(
             self.frame_izq_agregar_hab,
             corner_radius=estilos.CORNER_RADIUS,
+            fg_color=estilos.tema_frame_color,
             height = self.ALTURA_FRAME_RELLENO)
         frame_relleno_izq.grid(row = 4,
                                 column=0,
@@ -212,7 +214,10 @@ class VentanaAgregarHabito:
 
 
     def crear_frame_botones_navegacion(self): 
-        self.frame_botones_navegacion = ctk.CTkFrame(self.frame_derecho)
+        self.frame_botones_navegacion = ctk.CTkFrame(
+            self.frame_derecho,
+            #fg_color=estilos.tema_frame_color
+            )
         self.frame_botones_navegacion.grid(column=0, row=1, sticky="nsew",
                                      padx=estilos.PADX, pady=estilos.PADY)
         

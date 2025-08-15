@@ -22,7 +22,7 @@ class VentanaEliminarHabito:
         self.frame_eliminar_habito= ctk.CTkScrollableFrame(
             self.frame_eliminar_habito_contenedor, 
             corner_radius=estilos.CORNER_RADIUS,
-            #fg_color=estilos.COLOR_FONDO
+            fg_color=estilos.tema_frame_color
             )
         self.frame_eliminar_habito.pack(
             fill="both",
@@ -38,6 +38,8 @@ class VentanaEliminarHabito:
             self.habitos_creados = set()
         if not hasattr(self, "botones_habitos"):
             self.botones_habitos = {}
+        if not hasattr(self, "label_sin_habitos"):
+            self.label_sin_habitos = None
 
         ejecuciones = self.db_objeto.cargar_ejecuciones()  # Cargar ejecuciones actuales
 
@@ -45,7 +47,6 @@ class VentanaEliminarHabito:
         habitos_actuales = {habit["nombre_habito"] for habit in self.db_objeto.habitos}
         for nombre in list(self.habitos_creados):
             if nombre not in habitos_actuales:
-                # Eliminar botón del frame
                 if nombre in self.botones_habitos:
                     self.botones_habitos[nombre].destroy()
                     del self.botones_habitos[nombre]
@@ -53,42 +54,45 @@ class VentanaEliminarHabito:
 
         # 2️⃣ Si no hay hábitos
         if not self.db_objeto.habitos:
-            if not self.habitos_creados:  # Solo mostrar mensaje si está vacío
-                ctk.CTkLabel(
+            if not self.habitos_creados and self.label_sin_habitos is None:
+                self.label_sin_habitos = ctk.CTkLabel(
                     self.frame_eliminar_habito,
                     text="No hay hábitos registrados.",
-                    #fg_color=estilos.COLOR_FRENTE,
                     text_color=estilos.COLOR_BORDE,
                     font=estilos.FUENTE_PEQUEÑA
-                ).pack(pady=5)
-        else:
-            # 3️⃣ Crear título si no existe
-            if not getattr(self, "titulo_habitos", None):
-                self.titulo_habitos = ctk.CTkLabel(
-                    self.frame_eliminar_habito,
-                    text="Selecciona el hábito para eliminarlo \n ESTA ACCION NO SE PUEDE DESHACER",
-                    #text_color=estilos.COLOR_BORDE,
-                    font=estilos.FUENTE_PEQUEÑA
                 )
-                self.titulo_habitos.pack(pady=5)
+                self.label_sin_habitos.pack(pady=5)
+            return  # Salir para no crear botones innecesariamente
 
-            # 4️⃣ Crear botones solo para los hábitos nuevos
-            for habit in self.db_objeto.habitos:
-                nombre = habit["nombre_habito"]
-                if nombre not in self.habitos_creados:
-                    boton = ctk.CTkButton(
-                        self.frame_eliminar_habito,
-                        text=nombre,
-                        fg_color=habit["color"],
-                        #text_color=estilos.COLOR_BORDE,
-                        font=estilos.FUENTE_PEQUEÑA,
-                        command=lambda h=nombre: self.evento_eliminar_habito_selec(h)
-                    )
-                    boton.pack(fill="x", pady=1, padx=2)
+        # 🧹 Eliminar mensaje "No hay hábitos registrados" si ya hay hábitos
+        if self.label_sin_habitos:
+            self.label_sin_habitos.destroy()
+            self.label_sin_habitos = None
 
-                    self.botones_habitos[nombre] = boton
-                    self.habitos_creados.add(nombre)
+        # 3️⃣ Crear título si no existe
+        if not getattr(self, "titulo_habitos", None):
+            self.titulo_habitos = ctk.CTkLabel(
+                self.frame_eliminar_habito,
+                text="Selecciona el hábito para eliminarlo \n ESTA ACCION NO SE PUEDE DESHACER",
+                font=estilos.FUENTE_PEQUEÑA
+            )
+            self.titulo_habitos.pack(pady=5)
 
+        # 4️⃣ Crear botones solo para los hábitos nuevos
+        for habit in self.db_objeto.habitos:
+            nombre = habit["nombre_habito"]
+            if nombre not in self.habitos_creados:
+                boton = ctk.CTkButton(
+                    self.frame_eliminar_habito,
+                    text=nombre,
+                    fg_color=habit["color"],
+                    font=estilos.FUENTE_PEQUEÑA,
+                    command=lambda h=nombre: self.evento_eliminar_habito_selec(h)
+                )
+                boton.pack(fill="x", pady=1, padx=2)
+
+                self.botones_habitos[nombre] = boton
+                self.habitos_creados.add(nombre)
 
     def evento_eliminar_habito_selec(self, habit_seleccionado):
             """Elimina directamente el hábito seleccionado."""
