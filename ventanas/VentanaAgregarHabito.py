@@ -286,6 +286,7 @@ class VentanaAgregarHabito:
         self.evento_btn_cancelar()
         self.master.actualizacion_agregar_habito()
         self.master.obj_eliminar_habito.listar_habitos()
+        self.master.listar_habitos_ayer()
         
 
     def on_entry_click(self,event):

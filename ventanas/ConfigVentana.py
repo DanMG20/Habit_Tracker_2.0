@@ -1,14 +1,18 @@
-
 import json
+import os
 from pathlib import Path
-from direcciones import resource_path  # Asegúrate de tener esta función
+from direcciones import resource_path
 
-# Rutas de archivos usando Path
-direccion_archivo_posicion_ventana = Path("json/posicion_ventana.json")
-config_path = Path("json/configuracion.json")
+# Carpeta de usuario para archivos modificables
+APPDATA_DIR = os.path.join(os.environ['APPDATA'], 'Habit Tracker')
+os.makedirs(APPDATA_DIR, exist_ok=True)
+
+# Archivo de posición de ventana en APPDATA
+POSICION_VENTANA_FILE = os.path.join(APPDATA_DIR, 'posicion_ventana.json')
+
 
 def guardar_posicion_ventana(ventana):
-    archivo_real = Path(resource_path(direccion_archivo_posicion_ventana))
+    archivo_real = Path(POSICION_VENTANA_FILE)
     archivo_real.parent.mkdir(parents=True, exist_ok=True)
 
     x = ventana.winfo_x()
@@ -20,7 +24,7 @@ def guardar_posicion_ventana(ventana):
 
 
 def cargar_posicion_ventana(ventana):
-    archivo_real = Path(resource_path(direccion_archivo_posicion_ventana))
+    archivo_real = Path(POSICION_VENTANA_FILE)
 
     if archivo_real.exists():
         with archivo_real.open("r") as f:

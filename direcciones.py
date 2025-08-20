@@ -1,50 +1,42 @@
 from pathlib import Path
 import sys
 import os
-# Direcciones 
+
+# ---------------------- RUTAS DE RECURSOS FIJOS ----------------------
 def obtener_direccion_icono():
+    """Ruta al icono principal (solo lectura, incluido en la app)."""
     if getattr(sys, 'frozen', False):
         base_path = Path(sys._MEIPASS)
     else:
         base_path = Path(__file__).parent
-    DIRECCION_ICONO = base_path / "sources" / "icono_principal.ico"
-    return str(DIRECCION_ICONO)  # <--- Convertir a string
-
-
+    return str(base_path / "sources" / "icono_principal.ico")
 
 def obtener_direccion_icono_top():
+    """Ruta al icono secundario (solo lectura, incluido en la app)."""
     if getattr(sys, 'frozen', False):
         base_path = Path(sys._MEIPASS)
     else:
         base_path = Path(__file__).parent
-    DIRECCION_ICONO = base_path / "sources" / "icono_principal_copy.ico"
-    return str(DIRECCION_ICONO)  # <--- Convertir a string
-
-def obtener_direccion_dir_json():
-        if getattr(sys, 'frozen', False):
-            # PyInstaller ejecutándose
-            base_path = Path(sys._MEIPASS)
-        else:
-            # En desarrollo
-            base_path = Path(__file__).parent
-        DIRECCION_JSON = base_path / "json"
-        return  DIRECCION_JSON
-
-def direccion_config(relative_path):
-    """Obtiene la ruta absoluta al recurso, funciona para PyInstaller."""
-    if hasattr(sys, '_MEIPASS'):
-        # Ejecutando desde .exe
-        return os.path.join(sys._MEIPASS, relative_path)
-    return os.path.join(os.path.abspath("."), relative_path)
-
+    return str(base_path / "sources" / "icono_principal_copy.ico")
 
 def resource_path(relative_path):
-    """ Obtiene la ruta absoluta del recurso, funciona para dev y para .exe """
-    try:
-        # PyInstaller crea una carpeta temporal y guarda la ruta en _MEIPASS
+    """Obtiene la ruta absoluta del recurso, funciona para dev y PyInstaller."""
+    if getattr(sys, 'frozen', False):
         base_path = sys._MEIPASS
-    except AttributeError:
+    else:
         base_path = os.path.abspath(".")
-
     return os.path.join(base_path, relative_path)
 
+# ---------------------- RUTAS DE DATOS MODIFICABLES ----------------------
+APPDATA_DIR = Path(os.environ['APPDATA']) / "Habit Tracker"
+APPDATA_DIR.mkdir(parents=True, exist_ok=True)
+
+def obtener_ruta_json(nombre_archivo):
+    """Devuelve la ruta en APPDATA para archivos JSON modificables."""
+    return str(APPDATA_DIR / nombre_archivo)
+
+# Ejemplos:
+# Base de datos de hábitos: obtener_ruta_json("Base_de_datos_habitos.json")
+# Registro de hábitos: obtener_ruta_json("registro_habitos.json")
+# Configuración: obtener_ruta_json("configuracion.json")
+# Frases: obtener_ruta_json("frases.json")

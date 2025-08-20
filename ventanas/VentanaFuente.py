@@ -13,7 +13,7 @@ class VentanaFuente(ctk.CTkToplevel):
         self.grab_set() 
         pantalla_ancho = self.winfo_screenwidth()
         pantalla_alto = self.winfo_screenheight()
-        ancho, alto = 400, 300
+        ancho, alto = 400, 200
         x = (pantalla_ancho // 2) - (ancho // 2) + 143
         y = (pantalla_alto // 2) - (alto // 2)
         self.geometry(f"{ancho}x{alto}+{x}+{y}")
@@ -66,9 +66,7 @@ class VentanaFuente(ctk.CTkToplevel):
             pass
 
         # Botones
-        self.btn_prueba = ctk.CTkButton(self, text="Prueba", command=self.aplicar_fuente_prueba)
-        self.btn_prueba.pack(pady=10)
-
+   
         self.btn_aplicar = ctk.CTkButton(self, text="Aplicar cambios", command=self.aplicar_fuente)
         self.btn_aplicar.pack(pady=10)
 
@@ -124,9 +122,6 @@ class VentanaFuente(ctk.CTkToplevel):
     # ==== Aplicaciones ====
     def _aplicar_preview(self):
         self.label.configure(font=(self.fuente_seleccionada, 20))
-
-    def aplicar_fuente_prueba(self):
-        self._aplicar_preview()
 
     def aplicar_fuente(self):
         self.fuente_seleccionada = self.combo_fuente.get()

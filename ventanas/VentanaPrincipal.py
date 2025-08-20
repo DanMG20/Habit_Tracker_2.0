@@ -25,6 +25,7 @@ class VentanaPrincipal(ctk.CTk):
         #----------------------------------------------------------MAIN CONFIG -------------------------------------------------------
         self.title("")
         self.iconbitmap(obtener_direccion_icono())
+        self.cargar_archivos()
         #------------------------------------------OBJETOS----------------------------------------------------------------------------
         self.db_objeto = Database(master=self)
         self.fechas_objeto = Fechas(db_objeto =self.db_objeto)
@@ -69,7 +70,18 @@ class VentanaPrincipal(ctk.CTk):
     def al_cerrar(self):
         guardar_posicion_ventana(self)  # guarda la posición
         self.unbind("<Configure>")
+        for win in self.winfo_children():
+            win.destroy()
         self.destroy()                   # cierra la ventana
+        sys.exit()
+
+    def cargar_archivos(self):
+        # Carpeta de usuario para archivos modificables
+        APPDATA_DIR = os.path.join(os.environ['APPDATA'], 'Habit Tracker')
+        os.makedirs(APPDATA_DIR, exist_ok=True)
+
+        # Ruta del archivo de configuración
+        self.CONFIG_FILE = os.path.join(APPDATA_DIR, 'configuracion.json')
         
 #---------------------------------------------FUNCIONES DE INICIALIZACION------------------------------------------------------------
     def inicializar_variables_fechas(self):
@@ -92,15 +104,7 @@ class VentanaPrincipal(ctk.CTk):
         if hasattr(self, "obj_ventana_grafica_mes") and self.obj_ventana_grafica_mes:
             self.obj_ventana_grafica_mes.inicializar_frames_graf_mensual()
 
-         #   self.obj_ventana_grafica_mes.frame_grafica_mensual.grid(
-         #   row=3,
-        #    column=0,
-        #    columnspan =3,
-        #    sticky="nsew",
-        #    rowspan = 3, 
-        #    padx= estilos.PADX,
-        #    pady= estilos.PADY
-       # )
+
             
     def frames_ventana_grafica_anio(self):
         if hasattr(self, "grafica_anio_objeto") and self.grafica_anio_objeto:
@@ -465,6 +469,7 @@ class VentanaPrincipal(ctk.CTk):
             padx= estilos.PADX,
             pady = estilos.PADY,
         )
+
 #---------------------------------------------FRAMES SECUNDARIOS -----------------------------------------------------------------
     def mostrar_frame_encabezado_tabla_2_1 (self):
         #--------------------------------------FRAME 
@@ -528,6 +533,7 @@ class VentanaPrincipal(ctk.CTk):
                              pady=estilos.PADY,
 
                          )
+            
     def mostrar_frame_marcar_ayer(self):
         self.frame_btn_completar_ayer_contenedor =ctk.CTkFrame(
         self, 
@@ -596,6 +602,7 @@ class VentanaPrincipal(ctk.CTk):
         if hasattr(self, "botones_habitos") and nombre_habito in self.botones_habitos:
             boton = self.botones_habitos[nombre_habito]
             boton.configure(text=f"{nombre_habito} - Completado!", state="disabled")
+
     def evento_btn_agregar_habito(self):
         self.ventana_agregar_habito.crear_frame_derecho()
         self.ventana_agregar_habito.nombre_ventana_frame_1_0()
@@ -734,7 +741,7 @@ class VentanaPrincipal(ctk.CTk):
 #------------------------------Configura los botones para navegar entre semanas---------------------------------------------------
     def listar_habitos_ayer(self):   
         """Lista los nombres de los hábitos en el marco, agregando solo los nuevos y eliminando los que ya no existan."""
-
+        self.db_objeto.cargar_habitos()
         if not hasattr(self, "habitos_creados_ayer"):
             self.habitos_creados_ayer = set()
         if not hasattr(self, "botones_habitos_ayer"):
@@ -754,7 +761,7 @@ class VentanaPrincipal(ctk.CTk):
         # 2️⃣ Si no hay hábitos
         if not self.db_objeto.habitos:
             if not self.habitos_creados_ayer:
-                if not hasattr(self, "mensaje_no_habitos"):
+                if not hasattr(self, "mensaje_no_habitos_ayer"):
                     self.mensaje_no_habitos_ayer = ctk.CTkLabel(
                         self.frame_btn_completar_ayer,
                         text="No hay hábitos registrados.",
@@ -899,8 +906,20 @@ class VentanaPrincipal(ctk.CTk):
         self.db_objeto.cargar_habitos()
         ejecuciones = self.db_objeto.cargar_ejecuciones()
 
-        # --- Mensaje si no hay hábitos ---
+        # --- Si no hay hábitos ---
         if not self.db_objeto.habitos:
+            # 🔴 Eliminar labels viejos de hábitos si existen
+            if hasattr(self, "labels_nombres_habitos"):
+                for lbl in self.labels_nombres_habitos.values():
+                    lbl.destroy()
+                self.labels_nombres_habitos.clear()
+
+            if hasattr(self, "labels_estado_habitos"):
+                for lbl in self.labels_estado_habitos.values():
+                    lbl.destroy()
+                self.labels_estado_habitos.clear()
+
+            # Mostrar mensaje "sin hábitos"
             if not hasattr(self, "label_mensaje_sin_habitos"):
                 self.label_mensaje_sin_habitos = ctk.CTkLabel(
                     self.frame_tabla_habitos,
@@ -908,7 +927,6 @@ class VentanaPrincipal(ctk.CTk):
                     font=estilos.FUENTE_PEQUEÑA
                 )
                 self.label_mensaje_sin_habitos.pack(side="top")
-            # No seguimos dibujando nada si no hay hábitos
             return
         else:
             if hasattr(self, "label_mensaje_sin_habitos"):
@@ -921,6 +939,21 @@ class VentanaPrincipal(ctk.CTk):
         if not hasattr(self, "labels_nombres_habitos"):
             self.labels_nombres_habitos = {}  # {nombre: etiqueta}
 
+        # --- Limpiar hábitos eliminados ---
+        habitos_actuales = {h["nombre_habito"] for h in self.db_objeto.habitos}
+
+        # Borrar nombres eliminados
+        for nombre in list(self.labels_nombres_habitos.keys()):
+            if nombre not in habitos_actuales:
+                self.labels_nombres_habitos[nombre].destroy()
+                del self.labels_nombres_habitos[nombre]
+
+        # Borrar estados de hábitos eliminados
+        for (nombre, dia_indic) in list(self.labels_estado_habitos.keys()):
+            if nombre not in habitos_actuales:
+                self.labels_estado_habitos[(nombre, dia_indic)].destroy()
+                del self.labels_estado_habitos[(nombre, dia_indic)]
+
         # --- Crear/actualizar tabla de hábitos ---
         for indic, habit in enumerate(self.db_objeto.habitos):
             nombre = habit["nombre_habito"]
@@ -931,13 +964,15 @@ class VentanaPrincipal(ctk.CTk):
                 label_nombre = ctk.CTkLabel(
                     self.frame_tabla_habitos,
                     text=nombre,
-                    #text_color=estilos.COLOR_BORDE,
                     font=estilos.FUENTE_PEQUEÑA,
                     fg_color=estilos.tema_top_frame_color,
                     width=self.width_column_habitos_tabla,
                 )
                 label_nombre.grid(column=0, row=indic + 1, padx=1, sticky="nsew")
                 self.labels_nombres_habitos[nombre] = label_nombre
+            else:
+                # Reubicar en la fila correcta (en caso de que cambie el orden)
+                self.labels_nombres_habitos[nombre].grid(column=0, row=indic + 1, padx=1, sticky="nsew")
 
             # Procesar días
             for dia_indic in range(7):
@@ -960,7 +995,6 @@ class VentanaPrincipal(ctk.CTk):
                             texto = "⭐"
                             color_texto = "green" if ejecucion["completado"] else "red"
                         elif dia_semana.date() < self.fechas_objeto.DIA_HOY.date():
-                            # Ya pasó la fecha y no se ejecutó -> rojo
                             texto, color_texto = "⭐", "red"
                         else:
                             texto, color_texto = "⭐", "white"
@@ -979,10 +1013,10 @@ class VentanaPrincipal(ctk.CTk):
                 key = (nombre, dia_indic)
 
                 if key in self.labels_estado_habitos:
-                    # Actualizar si ya existe
                     self.labels_estado_habitos[key].configure(text=texto, text_color=color_texto)
+                    # Reubicar en caso de que cambie el orden
+                    self.labels_estado_habitos[key].grid(column=dia_indic + 1, row=indic + 1, padx=1, sticky="nsew")
                 else:
-                    # Crear si no existe
                     label_estado = ctk.CTkLabel(
                         self.frame_tabla_habitos,
                         text=texto,
@@ -991,6 +1025,8 @@ class VentanaPrincipal(ctk.CTk):
                     )
                     label_estado.grid(column=dia_indic + 1, row=indic + 1, padx=1, sticky="nsew")
                     self.labels_estado_habitos[key] = label_estado
+
+
 
     def config_frame_semana(self): 
         for column  in range (1,8): 
@@ -1013,67 +1049,66 @@ class VentanaPrincipal(ctk.CTk):
         tema_por_defecto = "blue"   # Tema default CTk
         modo_por_defecto = "dark"   # Modo default CTk
         fuente_por_defecto = "Comic Sans MS"
-        if not os.path.exists(resource_path(config_path)):
+
+        if not os.path.exists(self.CONFIG_FILE):
             self.TEMA_SELECCIONADO = tema_por_defecto
             self.MODO_APARIENCIA = modo_por_defecto
             self.guardar_configuracion_tema(tema_por_defecto)
             self.guardar_configuracion_fondo(modo_por_defecto)
         else:
-            with open(resource_path(config_path), "r") as f:
+            with open(self.CONFIG_FILE, "r") as f:
                 config = json.load(f)
                 self.TEMA_SELECCIONADO = config.get("TEMA_SELECCIONADO", tema_por_defecto)
                 self.MODO_APARIENCIA = config.get("MODO_APARIENCIA", modo_por_defecto)
 
         # ✅ Aplicar al GUI después de cargar
         if "\\" in self.TEMA_SELECCIONADO: 
-            
             ctk.set_default_color_theme(resource_path(self.TEMA_SELECCIONADO))
             ctk.set_appearance_mode(self.MODO_APARIENCIA)
         else:
-            print(self.TEMA_SELECCIONADO)
             ctk.set_default_color_theme(self.TEMA_SELECCIONADO)
             ctk.set_appearance_mode(self.MODO_APARIENCIA)
 
-    def guardar_configuracion_tema(self, nuevo_tema = None):
+
+    def guardar_configuracion_tema(self, nuevo_tema=None):
         """Guarda el tema y modo de apariencia en el archivo JSON y los aplica."""
         if nuevo_tema in estilos.TEMAS_COLOR_DEFAULT:
             self.TEMA_SELECCIONADO = nuevo_tema
             ctk.set_default_color_theme(nuevo_tema)
         elif nuevo_tema in estilos.TEMAS_PERSONALIZADOS:
             self.TEMA_SELECCIONADO = f"temas\\{nuevo_tema}.json"
-            
             ctk.set_default_color_theme(resource_path(self.TEMA_SELECCIONADO))
-            
-  
-        with open(resource_path(config_path), "w") as f:
+
+        with open(self.CONFIG_FILE, "w") as f:
             json.dump({
                 "TEMA_SELECCIONADO": self.TEMA_SELECCIONADO,
                 "MODO_APARIENCIA": self.MODO_APARIENCIA,
                 "FUENTE": estilos.FUENTE_PRINCIPAL,
             }, f, indent=4)
 
-    def guardar_configuracion_fondo(self, nuevo_modo): 
+
+    def guardar_configuracion_fondo(self, nuevo_modo):
+        """Guarda el modo de apariencia (dark/light) en el archivo JSON."""
         if nuevo_modo:
             self.MODO_APARIENCIA = nuevo_modo
             ctk.set_appearance_mode(nuevo_modo)
 
-        with open(resource_path(config_path), "w") as f:
+        with open(self.CONFIG_FILE, "w") as f:
             json.dump({
                 "TEMA_SELECCIONADO": self.TEMA_SELECCIONADO,
                 "MODO_APARIENCIA": self.MODO_APARIENCIA,
                 "FUENTE": estilos.FUENTE_PRINCIPAL,
             }, f, indent=4)
 
-    def guardar_configuracion_fuente(self, nueva_fuente): 
 
-
-        with open(resource_path(config_path), "w") as f:
+    def guardar_configuracion_fuente(self, nueva_fuente):
+        """Guarda la fuente seleccionada en el archivo JSON."""
+        with open(self.CONFIG_FILE, "w") as f:
             json.dump({
                 "TEMA_SELECCIONADO": self.TEMA_SELECCIONADO,
                 "MODO_APARIENCIA": self.MODO_APARIENCIA,
                 "FUENTE": nueva_fuente,
             }, f, indent=4)
-
 
     def generar_menu_frases(self):
     

@@ -1,5 +1,4 @@
 import customtkinter as ctk 
-from tkinter import messagebox 
 from CTkMessagebox import CTkMessagebox
 import estilos
 class VentanaEliminarHabito:
@@ -113,4 +112,6 @@ class VentanaEliminarHabito:
                     message=f"El hábito '{habit_seleccionado}' ha sido eliminado.")
             self.listar_habitos()
             self.master.listar_habitos()
+            self.master.lista_habitos_frame_semana()
+            self.master.listar_habitos_ayer()
             

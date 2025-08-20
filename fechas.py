@@ -112,26 +112,9 @@ class Fechas():
             "rendimiento": rendimiento
         }
 
-        self.guardar_rendimiento_semanal(rendimiento_data)
         return rendimiento_redondeado
     
-    def guardar_rendimiento_semanal(self, rendimiento_data):
-        """
-        Guarda el rendimiento semanal en un archivo JSON.
-        """
-        direccion  = resource_path("json\\rendimiento_semanal.json")
-        try:
-            with open(direccion, "r") as file:
-                rendimientos = json.load(file)
-        except FileNotFoundError:
-            rendimientos = []
 
-        # Agregar el nuevo rendimiento
-        rendimientos.append(rendimiento_data)
-
-        # Guardar en el archivo
-        with open(direccion, "w") as file:
-            json.dump(rendimientos, file, indent=4)
 
     def semana_siguiente(self):
          if self.dia_hoy_variable > (self.DIA_HOY +timedelta(weeks=1)):

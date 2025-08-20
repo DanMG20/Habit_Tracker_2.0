@@ -1,4 +1,5 @@
 {
-    "TEMA_SELECCIONADO": "temas\\rime.json",
-    "MODO_APARIENCIA": "dark"
+    "TEMA_SELECCIONADO": "dark-blue",
+    "MODO_APARIENCIA": "dark",
+    "FUENTE": "Comic Sans MS"
 }
