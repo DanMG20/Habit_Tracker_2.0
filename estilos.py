@@ -1,4 +1,5 @@
 import json
+from direcciones import direccion_config,resource_path
 import os
 from pathlib import Path
 import customtkinter as ctk
@@ -8,10 +9,11 @@ import customtkinter as ctk
 # Valores por defecto
 config_por_defecto = {
     "TEMA_SELECCIONADO": "blue",
-    "MODO_APARIENCIA": "dark"
+    "MODO_APARIENCIA": "dark",
+    "FUENTE":"Comic Sans MS"
 }
+configuracion = direccion_config("json/configuracion.json")
 
-configuracion = Path("json\\configuracion.json")
 
 # Crear archivo con valores por defecto si no existe
 if not os.path.exists(configuracion):
@@ -23,11 +25,12 @@ if not os.path.exists(configuracion):
 with open(configuracion, "r") as f:
     data = json.load(f)
     tema_ruta = data["TEMA_SELECCIONADO"]
+    FUENTE_PRINCIPAL = data["FUENTE"]
 
 # Cargar tema
 if "\\" in tema_ruta: 
     ruta = tema_ruta
-    with open(ruta, "r") as file:
+    with open(resource_path(ruta), "r") as file:
         tema_data = json.load(file)
 else: 
     ruta_tema = os.path.join(
@@ -35,8 +38,7 @@ else:
         "assets\\themes", 
         f"{tema_ruta}.json"
     )
-    print(ruta_tema)
-    with open(ruta_tema, "r") as f:
+    with open(resource_path(ruta_tema), "r") as f:
         tema_data = json.load(f)
 
 # Extraer colores del tema
@@ -46,7 +48,6 @@ tema_top_frame_color = tema_data["CTkFrame"]["top_fg_color"]
 tema_progressbar_fondo = tema_data["CTkProgressBar"]["fg_color"]
 
 #-------------------FUENTES------------------------
-FUENTE_PRINCIPAL = "Comic Sans MS" 
 FUENTE_TITULO = (FUENTE_PRINCIPAL, 40, "bold")
 FUENTE_SUBTITULOS =(FUENTE_PRINCIPAL, 25)
 FUENTE_PEQUEÑA =(FUENTE_PRINCIPAL, 15, "bold")
@@ -81,6 +82,7 @@ TEMAS_PERSONALIZADOS = ["autumn",
 TEMAS_COLOR_DEFAULT =["dark-blue","green","blue"]
 
 #COLORES PRINCIPALES 
+COLOR_AUTOR = ("gray20", "gray70")
 COLOR_BARRA_PRINCIPAL = "#303030"
 COLOR_CONTRASTE = "#0fa987"
 COLOR_FRENTE = "#333333"

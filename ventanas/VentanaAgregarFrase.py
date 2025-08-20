@@ -5,7 +5,7 @@ from direcciones import obtener_direccion_icono_top
 import customtkinter as ctk
 class VentanaAgregarFrase(ctk.CTkToplevel):
     def __init__(self, master,db_objeto,fecha_objeto):
-        super().__init__()
+        super().__init__(master)
         self.master = master
         self.db_objeto = db_objeto
         self.fecha_objeto = fecha_objeto
@@ -13,20 +13,17 @@ class VentanaAgregarFrase(ctk.CTkToplevel):
 
 
     def crear_ventana_crear_frase(self):
+            self.grab_set() 
             pantalla_ancho = self.winfo_screenwidth()
             pantalla_alto = self.winfo_screenheight()
             ancho = 500
             alto = 250
             # Calcular coordenadas centradas
             x = (pantalla_ancho // 2) - (ancho // 2) + 143
-            print(x)
+        
             y = (pantalla_alto // 2) - (alto // 2)
 
-            print(pantalla_alto)
-            print(pantalla_ancho)
-            print(x)
-            print(y)
-
+      
 
             self.geometry(f"{ancho}x{alto}+{x}+{y}")
             # Crear Toplevel

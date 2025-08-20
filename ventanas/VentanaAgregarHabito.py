@@ -4,7 +4,7 @@ import estilos
 class VentanaAgregarHabito:
     def __init__(self, master,frames_ventana_principal,db_objeto,fecha_objeto):
         self.master = master
-        self.default_text_entry  = "Levantarse Temprano, Leer (30 min), Regar las plantas ,etc..."
+        self.default_text_entry  = "Levantarse Temprano, Regar las plantas, etc..."
         self.frames_vent_principal = frames_ventana_principal
         self.db_objeto = db_objeto
         self.fecha_objeto = fecha_objeto

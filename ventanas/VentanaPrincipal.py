@@ -1,13 +1,18 @@
 import customtkinter as ctk 
-from PIL import Image, ImageTk
+from PIL import Image
 import estilos
 import sys
-from direcciones import obtener_direccion_icono
-from CTkMenuBar import *
+from direcciones import obtener_direccion_icono,resource_path
+#from CTkMenuBar import *
+from CTkMenuBarPlus import *
+from ventanas.VentanaFuente import *
 from ventanas.VentanaAgregarHabito import *
+from ventanas.VentanaGraficaMes import * 
 from ventanas.ConfigVentana import *
 from ventanas.VentanaEliminarHabito import * 
 from ventanas.VentanaAgregarFrase import * 
+from ventanas.VentanaAcercaDe import *
+from ventanas.VentanaGraficaAnio import *
 from Fechas import Fechas
 from datetime import *
 from Database import Database
@@ -23,35 +28,48 @@ class VentanaPrincipal(ctk.CTk):
         #------------------------------------------OBJETOS----------------------------------------------------------------------------
         self.db_objeto = Database(master=self)
         self.fechas_objeto = Fechas(db_objeto =self.db_objeto)
+        
+        
+
         self.db_objeto.cargar_frases_random()
         self.cargar_configuracion()
         #-----------------------------------------VARIABLES---------------------------------------------------------------------------
         self.DIA_HOY = self.fechas_objeto.DIA_HOY
+        self.dia_AYER =self.fechas_objeto.DIA_AYER
         self.inicializar_variables_fechas()
         self.width_column_habitos_tabla = 350 
         self.estado_boton_eliminar_habito = False
+        self.estado_boton_marcar_ayer = False
         #Ajustar pantalla
         
         cargar_posicion_ventana(self)
-
-
         #-------------------------------------------INICIALIZAR APP-------------------------------------------------------------------
         self.inicializar_frames_constantes()
         self.inicializar_todos_los_frames()
         self.configuracion_grillado()
-        
+        self.grafica_anio_objeto = VentanaGraficaAnio(
+                self,
+                self.frames_ventana_principal_lista,
+                self.db_objeto,self.fechas_objeto,
+            )
+        self.obj_ventana_grafica_mes = VentanaGraficaMes(
+            self,
+            self.frames_ventana_principal_lista,
+            self.db_objeto,self.fechas_objeto,
+            self.grafica_anio_objeto)
         #------------------------------------------CONFIG BOTONES -------------------------------------------------------------------
         self.configurar_controles_semanales()
         #self.actualizar_programa()
-        
         self.ventana_agregar_habito.evento_btn_cancelar()
-    
         #------------------------------------------PARA QUE LA VENTANA SE HABRA EN ZOOM-----------------------------------------------
         self.after_idle(lambda: self.state("zoomed"))
                 #Guardar posicion de la pantalla al cerrarse 
-        self.protocol("WM_DELETE_WINDOW",
-             lambda: (guardar_posicion_ventana(self), self.destroy()))
+        self.protocol("WM_DELETE_WINDOW", self.al_cerrar)
         
+    def al_cerrar(self):
+        guardar_posicion_ventana(self)  # guarda la posición
+        self.unbind("<Configure>")
+        self.destroy()                   # cierra la ventana
         
 #---------------------------------------------FUNCIONES DE INICIALIZACION------------------------------------------------------------
     def inicializar_variables_fechas(self):
@@ -70,10 +88,51 @@ class VentanaPrincipal(ctk.CTk):
     def frames_ventana_eliminar_habito(self):
         self.obj_eliminar_habito = VentanaEliminarHabito(self,self.db_objeto,self.fechas_objeto)
 
+    def frames_ventana_grafica(self):
+        if hasattr(self, "obj_ventana_grafica_mes") and self.obj_ventana_grafica_mes:
+            self.obj_ventana_grafica_mes.inicializar_frames_graf_mensual()
+
+         #   self.obj_ventana_grafica_mes.frame_grafica_mensual.grid(
+         #   row=3,
+        #    column=0,
+        #    columnspan =3,
+        #    sticky="nsew",
+        #    rowspan = 3, 
+        #    padx= estilos.PADX,
+        #    pady= estilos.PADY
+       # )
+            
+    def frames_ventana_grafica_anio(self):
+        if hasattr(self, "grafica_anio_objeto") and self.grafica_anio_objeto:
+            # Solo actualizar la gráfica existente
+        
+        
+    
+            self.grafica_anio_objeto.abrir_frames()
+            self.grafica_anio_objeto.frame_grafica_anual.grid(
+            row=3,
+            column=0,
+            columnspan =3,
+            sticky="nsew",
+            rowspan = 3, 
+            padx= estilos.PADX,
+            pady= estilos.PADY
+            )
+        else:
+        
+            self.grafica_anio_objeto = VentanaGraficaAnio(
+                self,
+                self.frames_ventana_principal_lista,
+                self.db_objeto,self.fechas_objeto,
+            )
+     
+
+
     def inicializar_todos_los_frames(self):
         self.frames_ventana_principal()
         self.frames_ventana_agregar_habito()
         self.frames_ventana_eliminar_habito()
+        self.mostrar_frame_marcar_ayer()
         
     def frames_ventana_principal(self):
         self.mostrar_frame_fecha_hoy_1_0()
@@ -91,7 +150,6 @@ class VentanaPrincipal(ctk.CTk):
                                     self.frame_encabezado
                                     ]
     
-
 #---------------------------------------------FRAMES CONSTANTES-----------------------------------------------------------
     def mostrar_frames_top(self):
          #------------------------------------FRAMES TITULO---------------------------------------------------------------
@@ -153,12 +211,10 @@ class VentanaPrincipal(ctk.CTk):
             self.frame_frase_0_1,
             text=f"— {self.db_objeto.autor_frase}",
             font=estilos.FUENTE_AUTOR,
-            text_color=("gray20", "gray70")
+            text_color=estilos.COLOR_AUTOR
         )
         self.label_autor.grid(row=1, column=0, padx=18, pady=(0, 16), sticky="n")
 
-
-        
     def configuracion_grillado(self): 
         #----------------------------------------------PRINCIPAL
         for columna in range(1,2):
@@ -168,6 +224,9 @@ class VentanaPrincipal(ctk.CTk):
     def barra_menu(self):
         menu = CTkTitleMenu(master=self)
         button_1 = menu.add_cascade("Tema")
+        button_4 = menu.add_cascade("Fuente",
+                                    command =self.evento_ventana_fuente
+                                    )
         button_2 = menu.add_cascade("Restaurar",
                                     command =self.db_objeto.resetear_archivos
                                     )
@@ -177,10 +236,9 @@ class VentanaPrincipal(ctk.CTk):
         self.submenu_eliminar_frase =self.cascada_boton_3.add_submenu("Eliminar Frase")
         self.generar_menu_frases()
 
-        button_f = menu.add_cascade("Acerca de")
+        button_f = menu.add_cascade("Acerca de",
+                                    command= self.evento_acerca_de_ventana)
         dropdown = CustomDropdownMenu(widget=button_1)
-        
-
         
         #-------------------------------------CAMBIAR- TEMA -------------------------------
         submenu_1 = dropdown.add_submenu("Apariencia") 
@@ -192,8 +250,6 @@ class VentanaPrincipal(ctk.CTk):
         for tema_per in estilos.TEMAS_PERSONALIZADOS: 
             submenu_2.add_option(option = tema_per,command= lambda t_p=tema_per: self.evento_cambiar_tema(t_p))
 
-
-        
 #--------------------------------------------------FRAMES PRINCIPALES-----------------------------------------------------------------
     
     def mostrar_frame_fecha_hoy_1_0(self): 
@@ -249,9 +305,11 @@ class VentanaPrincipal(ctk.CTk):
             pady= estilos.PADY
             )
         
-
     def mostrar_frame_control_1_2(self): 
-        self.frame_controles = ctk.CTkFrame(self,corner_radius=estilos.CORNER_RADIUS)
+        self.frame_controles = ctk.CTkFrame(
+            self,
+            corner_radius=estilos.CORNER_RADIUS,
+             width = 100)
         self.frame_controles.grid(
             row = 2,
             column = 2,
@@ -274,6 +332,7 @@ class VentanaPrincipal(ctk.CTk):
         self.label_f_control = ctk.CTkLabel(
             self.frame_controles,
             text = self.encabezados[1],
+            #width= 50,
             font =estilos.FUENTE_SUBTITULOS,
             anchor ="center",
             corner_radius=estilos.CORNER_RADIUS)
@@ -355,6 +414,7 @@ class VentanaPrincipal(ctk.CTk):
     
         self.frame_tabla_habitos_contenedor.rowconfigure(1 ,  weight=1)
         self.mostrar_frame_encabezado_tabla_2_1()
+
     def mostrar_frame_nav_4_1(self): 
         #--------------------------------------------FRAME-------------------
         self.frame_nav = ctk.CTkFrame(self, corner_radius=estilos.CORNER_RADIUS)
@@ -394,7 +454,7 @@ class VentanaPrincipal(ctk.CTk):
             pady = estilos.PADY,
         )
         self.boton_rend_mens =ctk.CTkButton(self.frame_nav,
-                                              #fg_color=estilos.COLOR_CONTRASTE,
+                                              command=self.evento_grafica_mensual,
                                               text= "Rendimiento Mensual",
                                               font= estilos.FUENTE_SUBTITULOS,
                                               )
@@ -423,6 +483,7 @@ class VentanaPrincipal(ctk.CTk):
         self.boton_marcar = ctk.CTkButton(
             self.frame_encabezado,
             text="¿Olvidaste marcar ayer?",
+            command=self.evento_marcar_ayer,
             #fg_color=estilos.COLOR_CONTRASTE,
             width = self.width_column_habitos_tabla,
             font=estilos.FUENTE_PEQUEÑA)
@@ -467,7 +528,31 @@ class VentanaPrincipal(ctk.CTk):
                              pady=estilos.PADY,
 
                          )
-
+    def mostrar_frame_marcar_ayer(self):
+        self.frame_btn_completar_ayer_contenedor =ctk.CTkFrame(
+        self, 
+        corner_radius=estilos.CORNER_RADIUS,
+        )
+        self.frame_btn_completar_ayer_contenedor.grid(
+            row=3,
+            column=0,
+            sticky="nsew",
+            rowspan = 3, 
+            padx= estilos.PADX,
+            pady= estilos.PADY
+        )
+        
+        self.frame_btn_completar_ayer = ctk.CTkScrollableFrame(
+            self.frame_btn_completar_ayer_contenedor,
+            corner_radius=estilos.CORNER_RADIUS,
+            fg_color=estilos.tema_frame_color,
+        )
+        self.frame_btn_completar_ayer.pack(
+            fill="both",
+            expand = True,
+            padx = estilos.PADX,
+            pady = estilos.PADY)
+        self.listar_habitos_ayer()
 #---------------------------------------------FUNCIONES DE ACTUALIZACION-----------------------------------------------------------
     def actualizar_programa(self):
         print("El programa se ha actualizado")
@@ -503,6 +588,14 @@ class VentanaPrincipal(ctk.CTk):
             boton = self.botones_habitos[nombre_habito]
             boton.configure(text=f"{nombre_habito} - Completado!", state="disabled")
 
+    def evento_marcar_habito_ayer(self,nombre_habito): 
+        self.db_objeto.registrar_ejecucion_habito_ayer(nombre_habito)
+        self.rendimiento_semanal = self.fechas_objeto.calcular_rendimiento_semanal()
+        self.refrescar_tabla_y_fechas(None)
+                # Actualizar botón: cambiar texto y deshabilitar
+        if hasattr(self, "botones_habitos") and nombre_habito in self.botones_habitos:
+            boton = self.botones_habitos[nombre_habito]
+            boton.configure(text=f"{nombre_habito} - Completado!", state="disabled")
     def evento_btn_agregar_habito(self):
         self.ventana_agregar_habito.crear_frame_derecho()
         self.ventana_agregar_habito.nombre_ventana_frame_1_0()
@@ -529,10 +622,201 @@ class VentanaPrincipal(ctk.CTk):
 
     def evento_agregar_frase(self):
         self.ventana_agregar_frase_objeto = VentanaAgregarFrase(master=self,db_objeto=self.db_objeto, fecha_objeto= self.fechas_objeto)
-        
-#------------------------------Configura los botones para navegar entre semanas---------------------------------------------------
-
     
+    def evento_ventana_fuente(self):
+        self.fuente_objeto = VentanaFuente(master=self)
+    def evento_acerca_de_ventana(self): 
+        self.acerca_de_objeto = VentanaAcercaDe(self)
+    def evento_grafica_mensual(self):
+
+        #Configurar botones para cambiar entre meses 
+        self.configurar_controles_mes()
+        #Cambia el encabezado del frame control
+        self.label_f_control.configure(text=self.fechas_objeto.encabezado_mes())
+        #Calcula el rendimiento que ira en la barra 
+        self.promedio_mes = self.fechas_objeto.calcular_rend_mes()
+        #Configura la barra con el rendimiento mensual 
+        self.barra_rendimiento.set(self.promedio_mes/100)
+        self.label_rendimiento.configure(text =f"{self.promedio_mes}%")
+        # Muestra el frame de la grafica mensual
+        self.frames_ventana_grafica()
+        self.obj_ventana_grafica_mes.frame_botones_navegacion.tkraise()
+
+    def evento_mes_anterior(self):
+
+                # Si ya existe una gráfica previa, destruirla
+        if hasattr(self.obj_ventana_grafica_mes, "frame_grafica_mensual") and self.obj_ventana_grafica_mes.frame_grafica_mensual:
+            self.obj_ventana_grafica_mes.frame_grafica_mensual.destroy()
+            self.obj_ventana_grafica_mes.frame_grafica_mensual = None
+            self.obj_ventana_grafica_mes.canvas_grafica = None
+        # Cambia la fecha a un mes anterior
+        self.fechas_objeto.mes_anterior()
+        # Recalcula las fechas para hacer los calculos
+        self.inicializar_variables_fechas()
+        # calcula el rendimiento mensual total para ponerlo en la barra de progreso
+        self.promedio_mes = self.fechas_objeto.calcular_rend_mes()
+        #Cambia el encabezado del frame control
+        self.label_f_control.configure(text=self.fechas_objeto.encabezado_mes())
+        #Configura la barra con el rendimiento mensual 
+        self.barra_rendimiento.set(self.promedio_mes/100)
+        self.label_rendimiento.configure(text =f"{self.promedio_mes}%")
+        # Muestra el frame de la grafica mensual
+        self.frames_ventana_grafica()
+
+    def evento_mes_siguiente(self):
+
+                # Si ya existe una gráfica previa, destruirla
+        if hasattr(self.obj_ventana_grafica_mes, "frame_grafica_mensual") and self.obj_ventana_grafica_mes.frame_grafica_mensual:
+            self.obj_ventana_grafica_mes.frame_grafica_mensual.destroy()
+            self.obj_ventana_grafica_mes.frame_grafica_mensual = None
+            self.obj_ventana_grafica_mes.canvas_grafica = None
+
+        self.fechas_objeto.mes_siguiente()
+        self.inicializar_variables_fechas()
+        # calcula el rendimiento mensual total para ponerlo en la barra de progreso
+        self.promedio_mes = self.fechas_objeto.calcular_rend_mes()
+        #Cambia el encabezado del frame control
+        self.label_f_control.configure(text=self.fechas_objeto.encabezado_mes())
+        #Configura la barra con el rendimiento mensual 
+        self.barra_rendimiento.set(self.promedio_mes/100)
+        self.label_rendimiento.configure(text =f"{self.promedio_mes}%")
+        # Muestra el frame de la grafica mensual
+        self.frames_ventana_grafica()
+
+    def evento_marcar_ayer(self):
+        
+        self.estado_boton_marcar_ayer = not self.estado_boton_marcar_ayer
+        if self.estado_boton_marcar_ayer:
+            self.frame_btn_completar_ayer_contenedor.tkraise()
+            self.fecha_hoy_label.configure(text = self.encabezados[4])
+        else: 
+            self.fecha_hoy_label.configure(text = self.encabezados[0])
+            self.frame_btn_completar_contenedor.tkraise()
+            
+    def evento_anio_anterior(self):
+                        # Si ya existe una gráfica previa, destruirla
+        if hasattr(self.grafica_anio_objeto, "frame_grafica_anual") and self.grafica_anio_objeto.frame_grafica_anual:
+            self.grafica_anio_objeto.frame_grafica_anual.destroy()
+            self.grafica_anio_objeto.frame_grafica_anual = None
+            self.grafica_anio_objeto.canvas_grafica = None
+        #actualiza la fecha 
+        self.fechas_objeto.anio_anterior()
+        self.inicializar_variables_fechas()
+        #calcular rendimientos de nuevo 
+        rend = self.fechas_objeto.rendimiento_meses_anio()
+        #Cambia el encabezado del frame control
+        self.label_f_control.configure(text=self.fechas_objeto.encabezado_anio())
+        #setear barra de progrreso
+        self.barra_rendimiento.set(rend[1]/100)
+        self.label_rendimiento.configure(text =f"{rend[1]}%")
+        self.frames_ventana_grafica_anio()
+
+    def evento_anio_siguiente(self):
+        # Si ya existe una gráfica previa, destruirla
+        
+        if hasattr(self.grafica_anio_objeto, "frame_grafica_anual") and self.grafica_anio_objeto.frame_grafica_anual:
+            self.grafica_anio_objeto.frame_grafica_anual.destroy()
+            self.grafica_anio_objeto.frame_grafica_anual = None
+            self.grafica_anio_objeto.canvas_grafica = None
+
+            
+                #actualiza la fecha 
+        self.fechas_objeto.anio_siguiente()
+        self.inicializar_variables_fechas()
+        #calcular rendimientos de nuevo 
+        rend = self.fechas_objeto.rendimiento_meses_anio()
+        #Cambia el encabezado del frame control
+        self.label_f_control.configure(text=self.fechas_objeto.encabezado_anio())
+        #setear barra de progrreso
+        self.barra_rendimiento.set(rend[1]/100)
+        self.label_rendimiento.configure(text =f"{rend[1]}%")
+        self.frames_ventana_grafica_anio()
+#------------------------------Configura los botones para navegar entre semanas---------------------------------------------------
+    def listar_habitos_ayer(self):   
+        """Lista los nombres de los hábitos en el marco, agregando solo los nuevos y eliminando los que ya no existan."""
+
+        if not hasattr(self, "habitos_creados_ayer"):
+            self.habitos_creados_ayer = set()
+        if not hasattr(self, "botones_habitos_ayer"):
+            self.botones_habitos_ayer = {}
+
+        ejecuciones = self.db_objeto.cargar_ejecuciones()  # Cargar ejecuciones actuales
+
+        # 1️⃣ Eliminar botones de hábitos que ya no estén en la base de datos
+        habitos_actuales = {habit["nombre_habito"] for habit in self.db_objeto.habitos}
+        for nombre in list(self.habitos_creados_ayer):
+            if nombre not in habitos_actuales:
+                if nombre in self.botones_habitos_ayer:
+                    self.botones_habitos_ayer[nombre].destroy()
+                    del self.botones_habitos_ayer[nombre]
+                self.habitos_creados_ayer.remove(nombre)
+
+        # 2️⃣ Si no hay hábitos
+        if not self.db_objeto.habitos:
+            if not self.habitos_creados_ayer:
+                if not hasattr(self, "mensaje_no_habitos"):
+                    self.mensaje_no_habitos_ayer = ctk.CTkLabel(
+                        self.frame_btn_completar_ayer,
+                        text="No hay hábitos registrados.",
+                        fg_color=estilos.tema_frame_color,
+                        text_color=estilos.COLOR_BORDE,
+                        font=estilos.FUENTE_PEQUEÑA
+                    )
+                    self.mensaje_no_habitos_ayer.pack(pady=5)
+            return
+        else:
+            # Eliminar mensaje de "No hay hábitos" si ahora sí hay
+            if hasattr(self, "mensaje_no_habitos_ayer"):
+                self.mensaje_no_habitos_ayer.destroy()
+                del self.mensaje_no_habitos_ayer
+
+        # 3️⃣ Crear título si no existe
+        if not getattr(self, "titulo_habitos_ayer", None):
+            self.titulo_habitos_ayer = ctk.CTkLabel(
+                self.frame_btn_completar_ayer,
+                text="Selecciona el hábito para completarlo!",
+                text_color=estilos.COLOR_BORDE,
+                font=estilos.FUENTE_PEQUEÑA
+            )
+            self.titulo_habitos_ayer.pack(pady=5)
+        if not getattr(self, "titulo_habitos_ayer_2", None):
+            self.titulo_habitos_ayer_2 = ctk.CTkLabel(
+                self.frame_btn_completar_ayer,
+                text="(Recuerda que esto marcará los hábitos la fecha de ayer)",
+                text_color=estilos.COLOR_AUTOR,
+                font=estilos.FUENTE_PEQUEÑA
+            )
+            self.titulo_habitos_ayer_2.pack(pady=5)
+
+        # 4️⃣ Crear botones solo para nuevos hábitos
+        for habit in self.db_objeto.habitos:
+            nombre = habit["nombre_habito"]
+            if nombre not in self.habitos_creados_ayer:
+                boton = ctk.CTkButton(
+                    self.frame_btn_completar_ayer,
+                    text=nombre,
+                    fg_color=habit["color"],
+                    text_color=estilos.COLOR_BORDE,
+                    font=estilos.FUENTE_PEQUEÑA,
+                    command=lambda h=nombre: self.evento_marcar_habito_ayer(h)
+                )
+                boton.pack(fill="x", pady=1, padx=2)
+
+                self.botones_habitos_ayer[nombre] = boton
+
+                # 5️⃣ Verificar si el hábito está completado hoy
+                fecha_ayer_str = self.fechas_objeto.DIA_AYER.strftime("%Y-%m-%d")
+                completado = any(
+                    e["nombre_habito"] == nombre and 
+                    e["fecha_ejecucion"] == fecha_ayer_str and 
+                    e.get("completado", False) 
+                    for e in ejecuciones
+                )
+                if completado:
+                    boton.configure(text=f"{nombre} - Completado!", state="disabled")
+
+                self.habitos_creados_ayer.add(nombre)
+
     def listar_habitos(self):   
         """Lista los nombres de los hábitos en el marco, agregando solo los nuevos y eliminando los que ya no existan."""
 
@@ -675,6 +959,9 @@ class VentanaPrincipal(ctk.CTk):
                         if ejecucion:
                             texto = "⭐"
                             color_texto = "green" if ejecucion["completado"] else "red"
+                        elif dia_semana.date() < self.fechas_objeto.DIA_HOY.date():
+                            # Ya pasó la fecha y no se ejecutó -> rojo
+                            texto, color_texto = "⭐", "red"
                         else:
                             texto, color_texto = "⭐", "white"
                     else:
@@ -725,21 +1012,27 @@ class VentanaPrincipal(ctk.CTk):
         """Carga el tema y modo de apariencia desde configuracion.json o crea el archivo con valores por defecto."""
         tema_por_defecto = "blue"   # Tema default CTk
         modo_por_defecto = "dark"   # Modo default CTk
-
-        if not os.path.exists(config_path):
+        fuente_por_defecto = "Comic Sans MS"
+        if not os.path.exists(resource_path(config_path)):
             self.TEMA_SELECCIONADO = tema_por_defecto
             self.MODO_APARIENCIA = modo_por_defecto
             self.guardar_configuracion_tema(tema_por_defecto)
             self.guardar_configuracion_fondo(modo_por_defecto)
         else:
-            with open(config_path, "r") as f:
+            with open(resource_path(config_path), "r") as f:
                 config = json.load(f)
                 self.TEMA_SELECCIONADO = config.get("TEMA_SELECCIONADO", tema_por_defecto)
                 self.MODO_APARIENCIA = config.get("MODO_APARIENCIA", modo_por_defecto)
 
         # ✅ Aplicar al GUI después de cargar
-        ctk.set_default_color_theme(self.TEMA_SELECCIONADO)
-        ctk.set_appearance_mode(self.MODO_APARIENCIA)
+        if "\\" in self.TEMA_SELECCIONADO: 
+            
+            ctk.set_default_color_theme(resource_path(self.TEMA_SELECCIONADO))
+            ctk.set_appearance_mode(self.MODO_APARIENCIA)
+        else:
+            print(self.TEMA_SELECCIONADO)
+            ctk.set_default_color_theme(self.TEMA_SELECCIONADO)
+            ctk.set_appearance_mode(self.MODO_APARIENCIA)
 
     def guardar_configuracion_tema(self, nuevo_tema = None):
         """Guarda el tema y modo de apariencia en el archivo JSON y los aplica."""
@@ -748,14 +1041,15 @@ class VentanaPrincipal(ctk.CTk):
             ctk.set_default_color_theme(nuevo_tema)
         elif nuevo_tema in estilos.TEMAS_PERSONALIZADOS:
             self.TEMA_SELECCIONADO = f"temas\\{nuevo_tema}.json"
-            print(self.TEMA_SELECCIONADO)
-            ctk.set_default_color_theme(self.TEMA_SELECCIONADO)
+            
+            ctk.set_default_color_theme(resource_path(self.TEMA_SELECCIONADO))
             
   
-        with open(config_path, "w") as f:
+        with open(resource_path(config_path), "w") as f:
             json.dump({
                 "TEMA_SELECCIONADO": self.TEMA_SELECCIONADO,
                 "MODO_APARIENCIA": self.MODO_APARIENCIA,
+                "FUENTE": estilos.FUENTE_PRINCIPAL,
             }, f, indent=4)
 
     def guardar_configuracion_fondo(self, nuevo_modo): 
@@ -763,15 +1057,26 @@ class VentanaPrincipal(ctk.CTk):
             self.MODO_APARIENCIA = nuevo_modo
             ctk.set_appearance_mode(nuevo_modo)
 
-        with open(config_path, "w") as f:
+        with open(resource_path(config_path), "w") as f:
             json.dump({
                 "TEMA_SELECCIONADO": self.TEMA_SELECCIONADO,
                 "MODO_APARIENCIA": self.MODO_APARIENCIA,
+                "FUENTE": estilos.FUENTE_PRINCIPAL,
             }, f, indent=4)
 
+    def guardar_configuracion_fuente(self, nueva_fuente): 
+
+
+        with open(resource_path(config_path), "w") as f:
+            json.dump({
+                "TEMA_SELECCIONADO": self.TEMA_SELECCIONADO,
+                "MODO_APARIENCIA": self.MODO_APARIENCIA,
+                "FUENTE": nueva_fuente,
+            }, f, indent=4)
+
+
     def generar_menu_frases(self):
-        
-       
+    
         self.set_frases = set()  # Crear set vacío
         for frase in self.db_objeto.frases:
             self.set_frases.add(frase)  # Agrega solo frases únicas
@@ -785,3 +1090,11 @@ class VentanaPrincipal(ctk.CTk):
             self.submenu_eliminar_frase.add_option(
                 option=frase_unica, 
                 command= lambda f = frase_unica :self.db_objeto.evento_eliminar_frase_selec(f))
+            
+    def configurar_controles_mes(self):
+        self.boton_izq_control.configure(command = self.evento_mes_anterior)
+        self.boton_der_control.configure(command = self.evento_mes_siguiente)
+
+    def configurar_controles_año(self):
+        self.boton_izq_control.configure(command = self.evento_anio_anterior)
+        self.boton_der_control.configure(command = self.evento_anio_siguiente)

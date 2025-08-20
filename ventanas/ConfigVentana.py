@@ -1,36 +1,36 @@
-import customtkinter as ctk 
+
 import json
 from pathlib import Path
-import os
-import estilos
+from direcciones import resource_path  # Asegúrate de tener esta función
 
+# Rutas de archivos usando Path
+direccion_archivo_posicion_ventana = Path("json/posicion_ventana.json")
+config_path = Path("json/configuracion.json")
 
-direccion_archivo_posicion_ventana  = Path("json\\posicion_ventana.json")
-config_path = Path("json\\configuracion.json")
 def guardar_posicion_ventana(ventana):
+    archivo_real = Path(resource_path(direccion_archivo_posicion_ventana))
+    archivo_real.parent.mkdir(parents=True, exist_ok=True)
+
     x = ventana.winfo_x()
     y = ventana.winfo_y()
-    datos = {
-        "posicion": {"x": x, "y": y},
-    }
+    datos = {"posicion": {"x": x, "y": y}}
+
+    with archivo_real.open("w") as f:
+        json.dump(datos, f)
 
 
-    with direccion_archivo_posicion_ventana.open("w") as f:
-         json.dump(datos, f)
 def cargar_posicion_ventana(ventana):
-        # Verificar si el archivo existe
-        if os.path.exists(direccion_archivo_posicion_ventana):
-            with open(direccion_archivo_posicion_ventana, "r") as f:
-                datos = json.load(f)
-                posicion = datos["posicion"]
-                ventana.geometry(f"+{posicion['x']}+{posicion['y']}")
-        else:
-            # Si no existe el archivo, centrar la ventana
-            ventana.update_idletasks()  # Asegura que se obtengan los valores correctos de tamaño
-            screen_width = ventana.winfo_screenwidth()
-            screen_height = ventana.winfo_screenheight()
-            ventana.geometry(
-                f"800x600+{(screen_width - 800) // 2}+{(screen_height - 600) // 2}")  # Ajusta el tamaño predeterminado si es necesario
+    archivo_real = Path(resource_path(direccion_archivo_posicion_ventana))
 
-
-
+    if archivo_real.exists():
+        with archivo_real.open("r") as f:
+            datos = json.load(f)
+            posicion = datos.get("posicion", {"x": 100, "y": 100})
+            ventana.geometry(f"+{posicion['x']}+{posicion['y']}")
+    else:
+        ventana.update_idletasks()
+        screen_width = ventana.winfo_screenwidth()
+        screen_height = ventana.winfo_screenheight()
+        ventana.geometry(
+            f"800x600+{(screen_width - 800) // 2}+{(screen_height - 600) // 2}"
+        )

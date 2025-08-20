@@ -1,19 +1,19 @@
 import os
 import json
-from datetime import datetime
+from datetime import datetime,timedelta
 from CTkMessagebox import CTkMessagebox
 import estilos
 import shutil
-import direcciones
+from direcciones import obtener_direccion_dir_json,resource_path
 import random
 class Database:
     def __init__(self, master):
         self.habitos = self.cargar_habitos()
         self.master = master
     def cargar_habitos(self):
-        if not os.path.exists("json\\Base_de_datos_habitos.json"):
+        if not os.path.exists(resource_path("json\\Base_de_datos_habitos.json")):
             return []
-        with open("json\\Base_de_datos_habitos.json", "r") as archivo:
+        with open(resource_path("json\\Base_de_datos_habitos.json"), "r") as archivo:
             try:
                 return json.load(archivo)
             except json.JSONDecodeError:
@@ -21,7 +21,7 @@ class Database:
                 return []
     # Guarda la información en el archivo JSON
     def guardar_habitos(self):
-        with open("json\\Base_de_datos_habitos.json", "w") as archivo:
+        with open(resource_path("json\\Base_de_datos_habitos.json"), "w") as archivo:
             json.dump(self.habitos, archivo, indent=4)
 
     # Función para crear un hábito
@@ -51,16 +51,16 @@ class Database:
 
 #-----------------------------------------------------EJECUCIONES-----------------------------------------
     def cargar_ejecuciones(self):
-        if not os.path.exists(("json\\registro_habitos.json")):
+        if not os.path.exists(resource_path("json\\registro_habitos.json")):
             return[]
         try:
-            with open('json\\registro_habitos.json', 'r') as f:
+            with open(resource_path('json\\registro_habitos.json'), 'r') as f:
                 return json.load(f)
         except FileNotFoundError:
             return []
 
     def guardar_ejecuciones(self,ejecuciones):
-        with open('json\\registro_habitos.json', 'w') as f:
+        with open(resource_path('json\\registro_habitos.json'), 'w') as f:
             json.dump(ejecuciones, f, indent=4)
 
     def registrar_ejecucion_habito(self, nombre_habito):
@@ -90,7 +90,34 @@ class Database:
                     font =estilos.FUENTE_PEQUEÑA,
                     message= ("Éxito", f"Se registró como completado el hábito '{nombre_habito}' para hoy."),
                     icon="check", option_1="Aceptar")
-    
+    def registrar_ejecucion_habito_ayer(self, nombre_habito):
+        DIA_AYER = datetime.now()-timedelta(days=1)
+        fecha_ayer = DIA_AYER.strftime("%Y-%m-%d")
+        ejecuciones = self.cargar_ejecuciones()
+
+        # Verificar si el hábito ya fue registrado hoy
+        if any(ejec["nombre_habito"] == nombre_habito and ejec["fecha_ejecucion"] == fecha_ayer for ejec in
+               ejecuciones):
+            CTkMessagebox(master =self.master,
+            font =estilos.FUENTE_PEQUEÑA,
+            message= ("Información", f"El hábito '{nombre_habito}' ya fue completado hoy."),
+            icon="check", option_1="Aceptar")
+            return
+
+        # Agregar nuevo registro
+        nuevo_registro = {
+            "nombre_habito": nombre_habito,
+            "fecha_ejecucion": fecha_ayer,
+            "completado": True
+        }
+        ejecuciones.append(nuevo_registro)
+
+        # Guardar actualizaciones
+        self.guardar_ejecuciones(ejecuciones)
+        CTkMessagebox(master =self.master,
+                    font =estilos.FUENTE_PEQUEÑA,
+                    message= ("Éxito", f"Se registró como completado el hábito '{nombre_habito}' para hoy."),
+                    icon="check", option_1="Aceptar")
 
 
 #-------------------------------------RESET--------------------------------
@@ -108,7 +135,7 @@ class Database:
         response = msg.get()
 
         if response == "Sí":
-            direccion = direcciones.obtener_direccion_dir_json()
+            direccion = obtener_direccion_dir_json()
 
             try:
                 # Borrar TODO el directorio de golpe
@@ -145,11 +172,11 @@ class Database:
                 "autor": "Aristóteles",
                 "indice": 1
             }]
-            with open("json\\frases.json", 'w') as f:
+            with open(resource_path("json\\frases.json"), 'w') as f:
                 json.dump(frase_default, f, indent=4)
 
         try:
-            with open("json\\frases.json", 'r') as f:
+            with open(resource_path("json\\frases.json"), 'r') as f:
                 frases = json.load(f)
                 self.frases = []
 
@@ -161,8 +188,6 @@ class Database:
                 frase_random = random.choice(frases)  # Selección aleatoria
                 self.frase_seleccionada = frase_random["frase"]
                 self.autor_frase = frase_random["autor"]
-                print(self.frase_seleccionada)
-                print(self.autor_frase)
             else:
                 print("No hay frases registradas.")
 
@@ -182,7 +207,7 @@ class Database:
         response = msg.get()
 
         if response == "Sí":
-            ruta_frases = "json\\frases.json"
+            ruta_frases = resource_path("json\\frases.json")
 
             # Leer archivo existente
             if os.path.exists(ruta_frases):
@@ -205,7 +230,7 @@ class Database:
                 ]
 
             # Guardar cambios en el JSON
-            with open(ruta_frases, "w") as f:
+            with open(resource_path(ruta_frases), "w") as f:
                 json.dump(frases, f, indent=4)
 
             # Mensaje de confirmación
