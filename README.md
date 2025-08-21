@@ -29,8 +29,39 @@ CustomTkinter (interfaz gráfica)
 Matplotlib (gráficas de progreso)
 
 📷 Capturas de pantalla
-<img width="1916" height="1009" alt="Captura de pantalla 2025-08-21 125634" src="https://github.com/user-attachments/assets/9b52a45a-b617-4c20-a625-9891c480a665" />
-<img width="1917" height="1021" alt="Captura de pantalla 2025-08-21 125623" src="https://github.com/user-attachments/assets/c2970786-30a7-4cca-9a68-4914a93a47ae" />
-<img width="1916" height="1018" alt="Captura de pantalla 2025-08-21 125558" src="https://github.com/user-attachments/assets/a216aca8-69a5-4bd5-b70e-4f5107696a63" />
+
 <img width="1915" height="1009" alt="Captura de pantalla 2025-08-21 125544" src="https://github.com/user-attachments/assets/7aaa3370-b061-4c05-a806-8b9723493347" />
+<img width="1916" height="1018" alt="Captura de pantalla 2025-08-21 125558" src="https://github.com/user-attachments/assets/a216aca8-69a5-4bd5-b70e-4f5107696a63" />
+<img width="1917" height="1021" alt="Captura de pantalla 2025-08-21 125623" src="https://github.com/user-attachments/assets/c2970786-30a7-4cca-9a68-4914a93a47ae" />
+<img width="1916" height="1009" alt="Captura de pantalla 2025-08-21 125634" src="https://github.com/user-attachments/assets/9b52a45a-b617-4c20-a625-9891c480a665" />
+
+
+
+## 🚀 Instalación
+
+### Opción 1: Usar el instalador (recomendado)
+1. Descarga la última versión desde [este release](https://github.com/DanMG20/Habit_Tracker_2.0/releases/tag/Test).
+2. En la sección **Assets**, baja el archivo `.zip` correspondiente.
+3. Extrae el contenido en una carpeta de tu computadora.
+4. Haz doble clic en `Habit_Tracker.exe` para iniciar la aplicación.
+
+### Opción 2: Ejecutar desde el código fuente
+1. Clona este repositorio:
+   ```bash
+   git clone https://github.com/DanMG20/Habit_Tracker_2.0.git
+   cd Habit_Tracker_2.0
+Instala las dependencias:
+
+bash
+Copiar
+Editar
+pip install -r requirements.txt
+Ejecuta la aplicación:
+
+bash
+Copiar
+Editar
+python app.py
+
+
 
