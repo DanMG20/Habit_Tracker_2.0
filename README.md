@@ -55,8 +55,8 @@ Matplotlib (gráficas de progreso)
    pip install -r requirements.txt
 
 3. Ejecuta la aplicación: 
- ```bash
-   python app.py
+    ```bash
+    python app.py
 
 
 
