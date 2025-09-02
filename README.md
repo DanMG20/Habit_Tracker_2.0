@@ -40,7 +40,7 @@ Matplotlib (gráficas de progreso)
 ## 🚀 Instalación
 
 ### Opción 1: Usar el instalador (recomendado)
-1. Descarga la última versión desde [este release](https://github.com/DanMG20/Habit_Tracker_2.0/releases/tag/Test).
+1. Descarga la última versión desde [este release](https://github.com/DanMG20/Habit_Tracker_2.0/releases/tag/1.0).
 2. En la sección **Assets**, baja el archivo `.zip` correspondiente.
 3. Extrae el contenido en una carpeta de tu computadora.
 4. Haz doble clic en `HabitTrackerInstaller.exe` para comenzar a instalar la aplicacion.
