@@ -73,7 +73,7 @@
  [],
  False,
  False,
- 1755717347,
+ 1756852946,
  [('runw.exe',
    'C:\\Users\\EDMG0\\Documents\\Proyectos_python\\Habit_Traker_2.0\\.venv\\lib\\site-packages\\PyInstaller\\bootloader\\Windows-64bit-intel\\runw.exe',
    'EXECUTABLE')],

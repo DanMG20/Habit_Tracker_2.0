@@ -13,7 +13,7 @@ from ventanas.VentanaEliminarHabito import *
 from ventanas.VentanaAgregarFrase import * 
 from ventanas.VentanaAcercaDe import *
 from ventanas.VentanaGraficaAnio import *
-from Fechas import Fechas
+from fechas import fechas
 from datetime import *
 from Database import Database
 from Tooltip import Tooltip
@@ -29,7 +29,7 @@ class VentanaPrincipal(ctk.CTk):
         self.cargar_archivos()
         #------------------------------------------OBJETOS----------------------------------------------------------------------------
         self.db_objeto = Database(master=self)
-        self.fechas_objeto = Fechas(db_objeto =self.db_objeto)
+        self.fechas_objeto = fechas(db_objeto =self.db_objeto)
         
         
 

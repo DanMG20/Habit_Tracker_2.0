@@ -4,10 +4,9 @@ import calendar
 from dateutil.relativedelta import relativedelta
 from direcciones import resource_path
 import locale
-import json
 # Establecer el locale a español (puede variar según el sistema operativo)
 locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
-class Fechas():
+class fechas():
     def __init__(self, db_objeto):
         self.db_objeto = db_objeto
         self.refrescar_variables()
