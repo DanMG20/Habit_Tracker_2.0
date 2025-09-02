@@ -50,7 +50,7 @@ class Database:
         with open(self.habitos_file, "w") as archivo:
             json.dump(self.habitos, archivo, indent=4)
 
-    def crear_habito(self, nombre_habito_nuevo, dias_ejecucion, color):
+    def crear_habito(self, nombre_habito_nuevo, dias_ejecucion, color, descripcion):
         fecha_creacion_string = str(datetime.now().date())
         dias_ejecucion_valores = list(dias_ejecucion)
 
@@ -63,7 +63,8 @@ class Database:
             "nombre_habito": nombre_habito_nuevo,
             "dias_ejecucion": dias_ejecucion_valores,
             "Fecha_creacion": fecha_creacion_string,
-            "color": color
+            "color": color,
+            "descripcion": descripcion
         }
         self.habitos.append(habito)
         self.guardar_habitos()

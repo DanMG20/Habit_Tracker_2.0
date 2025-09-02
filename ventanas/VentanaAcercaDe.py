@@ -56,6 +56,7 @@ class VentanaAcercaDe(ctk.CTkToplevel):
         ctk.CTkLabel(redes_frame, text="📱 Redes Sociales", font=("Arial", 14, "bold")).pack(pady=5)
 
         redes = [
+            ("Donar", resource_path("sources/icons/paypal.png"), "https://www.paypal.com/donate/?hosted_button_id=KT2LZ7N5WGW2C"),
             ("GitHub", resource_path("sources/icons/github.png"), "https://github.com/DanMG20"),
             ("Twitch", resource_path("sources/icons/twitch.png"), "https://www.twitch.tv/elchilakas1"),
             ("TikTok", resource_path("sources/icons/tiktok.png"), "https://www.tiktok.com/@elchilakasof"),

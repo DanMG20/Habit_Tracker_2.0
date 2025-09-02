@@ -10,12 +10,17 @@ locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
 class Fechas():
     def __init__(self, db_objeto):
         self.db_objeto = db_objeto
+        self.refrescar_variables()
+
+
+    
+    def refrescar_variables(self):
         self.DIA_HOY = datetime.now()
         self.dia_hoy_variable = datetime.now()
         self.dia_hoy_variable_2 = datetime.now()
         self.dia_hoy_variable_3 = datetime.now()
         self.DIA_AYER = datetime.now() - timedelta(days=1)
-        
+
     
     def encabezados_fechas(self):
             #CONSTANTES

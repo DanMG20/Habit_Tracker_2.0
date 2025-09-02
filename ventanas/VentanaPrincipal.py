@@ -16,6 +16,7 @@ from ventanas.VentanaGraficaAnio import *
 from Fechas import Fechas
 from datetime import *
 from Database import Database
+from Tooltip import Tooltip
 
 
 class VentanaPrincipal(ctk.CTk):
@@ -41,6 +42,8 @@ class VentanaPrincipal(ctk.CTk):
         self.width_column_habitos_tabla = 350 
         self.estado_boton_eliminar_habito = False
         self.estado_boton_marcar_ayer = False
+        self.fecha_guardada = datetime.now().date()
+
         #Ajustar pantalla
         
         cargar_posicion_ventana(self)
@@ -60,8 +63,9 @@ class VentanaPrincipal(ctk.CTk):
             self.grafica_anio_objeto)
         #------------------------------------------CONFIG BOTONES -------------------------------------------------------------------
         self.configurar_controles_semanales()
-        #self.actualizar_programa()
+        
         self.ventana_agregar_habito.evento_btn_cancelar()
+        self.fecha_guardada=self.verificar_fecha()
         #------------------------------------------PARA QUE LA VENTANA SE HABRA EN ZOOM-----------------------------------------------
         self.after_idle(lambda: self.state("zoomed"))
                 #Guardar posicion de la pantalla al cerrarse 
@@ -103,9 +107,7 @@ class VentanaPrincipal(ctk.CTk):
     def frames_ventana_grafica(self):
         if hasattr(self, "obj_ventana_grafica_mes") and self.obj_ventana_grafica_mes:
             self.obj_ventana_grafica_mes.inicializar_frames_graf_mensual()
-
-
-            
+    
     def frames_ventana_grafica_anio(self):
         if hasattr(self, "grafica_anio_objeto") and self.grafica_anio_objeto:
             # Solo actualizar la gráfica existente
@@ -130,8 +132,6 @@ class VentanaPrincipal(ctk.CTk):
                 self.db_objeto,self.fechas_objeto,
             )
      
-
-
     def inicializar_todos_los_frames(self):
         self.frames_ventana_principal()
         self.frames_ventana_agregar_habito()
@@ -560,15 +560,27 @@ class VentanaPrincipal(ctk.CTk):
             pady = estilos.PADY)
         self.listar_habitos_ayer()
 #---------------------------------------------FUNCIONES DE ACTUALIZACION-----------------------------------------------------------
-    def actualizar_programa(self):
+    def actualizar_programa_completo(self):
         print("El programa se ha actualizado")
+        #actualiza todo el sector derecho de la pantalla asi como las fechas
+        self.fechas_objeto.refrescar_variables()
         self.refrescar_tabla_y_fechas(None)
-        self.crear_linea_fecha()
+        #actualiza el contenido de la fecha que indica el dia de hoy
+        self.fecha_hoy_label.configure(text = self.encabezados[0])
+        self.listar_habitos()
+        #Selecciona una nueva frase de la base de datos de frases 
+        self.db_objeto.cargar_frases_random()
+        # Actualiza el frame que contiene las frases
+        for widget in self.frame_frase_0_1.winfo_children():
+            widget.destroy()
+        self.mostrar_frase()
         # Reprogramar la ejecución después de 900,000 ms (15 min)
-        self.after(900000, self.actualizar_programa)
+        
     
     def refrescar_tabla_y_fechas(self,event):
+        #Refresca las variables de las fechas 
         self.inicializar_variables_fechas()
+        #Refresca la barra de rendimiento 
         self.barra_rendimiento.set(self.rendimiento_semanal/100)
         self.label_rendimiento.configure(text =f"{self.rendimiento_semanal}%")
         # Actualizar label del control de semana
@@ -576,6 +588,20 @@ class VentanaPrincipal(ctk.CTk):
         # Redibujar los encabezados y tabla de hábitos
         self.mostrar_frame_encabezado_tabla_2_1()
         self.lista_habitos_frame_semana()
+
+    def verificar_fecha(self):
+        hoy = datetime.now().date()
+        if hoy != self.fecha_guardada:
+            #print("Actualizar datos")
+            self.fecha_guardada = hoy 
+            #print(f"Fecha_guardada actualizada a : {self.fecha_guardada}")
+            self.actualizar_programa_completo()
+            self.after(300000, self.verificar_fecha)
+            
+        else:
+            #print("mismo dia")
+            self.after(300000, self.verificar_fecha)
+        return self.fecha_guardada
 #-------------------------------------------------------EVENTOS--------------------------------------------------------------------
     def evento_semana_anterior(self):
         self.fechas_objeto.semana_anterior()
@@ -599,8 +625,8 @@ class VentanaPrincipal(ctk.CTk):
         self.rendimiento_semanal = self.fechas_objeto.calcular_rendimiento_semanal()
         self.refrescar_tabla_y_fechas(None)
                 # Actualizar botón: cambiar texto y deshabilitar
-        if hasattr(self, "botones_habitos") and nombre_habito in self.botones_habitos:
-            boton = self.botones_habitos[nombre_habito]
+        if hasattr(self, "botones_habitos_ayer") and nombre_habito in self.botones_habitos_ayer:
+            boton = self.botones_habitos_ayer[nombre_habito]
             boton.configure(text=f"{nombre_habito} - Completado!", state="disabled")
 
     def evento_btn_agregar_habito(self):
@@ -819,7 +845,17 @@ class VentanaPrincipal(ctk.CTk):
                     e.get("completado", False) 
                     for e in ejecuciones
                 )
-                if completado:
+
+                          # Verificar si el habito NO puede ser ejecutado hoy 
+                dia_dic = {}
+                for dia_indic in range(7):
+                    dia_semana = self.inicio_semana + timedelta(days=dia_indic)
+                    dia_semana_str = dia_semana.strftime("%Y-%m-%d")
+                    dia_dic[dia_semana_str] = dia_indic
+                indice_dia = dia_dic[fecha_ayer_str]
+             
+
+                if completado or habit["dias_ejecucion"][indice_dia] == False or habit["Fecha_creacion"] == datetime.now().date().strftime("%Y-%m-%d") :
                     boton.configure(text=f"{nombre} - Completado!", state="disabled")
 
                 self.habitos_creados_ayer.add(nombre)
@@ -888,15 +924,28 @@ class VentanaPrincipal(ctk.CTk):
 
                 self.botones_habitos[nombre] = boton
 
+             # 🔹 Agregar tooltip con la descripción del hábito
+                descripcion = habit.get("descripcion", "Sin descripción")
+                Tooltip(boton, descripcion)
+
                 # 5️⃣ Verificar si el hábito está completado hoy
                 fecha_hoy_str = self.fechas_objeto.DIA_HOY.strftime("%Y-%m-%d")
+        
                 completado = any(
                     e["nombre_habito"] == nombre and 
                     e["fecha_ejecucion"] == fecha_hoy_str and 
                     e.get("completado", False) 
                     for e in ejecuciones
                 )
-                if completado:
+                # Verificar si el habito NO puede ser ejecutado hoy 
+                dia_dic = {}
+                for dia_indic in range(7):
+                    dia_semana = self.inicio_semana + timedelta(days=dia_indic)
+                    dia_semana_str = dia_semana.strftime("%Y-%m-%d")
+                    dia_dic[dia_semana_str] = dia_indic
+                indice_dia = dia_dic[fecha_hoy_str]
+
+                if completado or habit["dias_ejecucion"][indice_dia] == False:
                     boton.configure(text=f"{nombre} - Completado!", state="disabled")
 
                 self.habitos_creados.add(nombre)
@@ -1026,8 +1075,6 @@ class VentanaPrincipal(ctk.CTk):
                     label_estado.grid(column=dia_indic + 1, row=indic + 1, padx=1, sticky="nsew")
                     self.labels_estado_habitos[key] = label_estado
 
-
-
     def config_frame_semana(self): 
         for column  in range (1,8): 
             self.frame_tabla_habitos.columnconfigure(column, weight=1,uniform="col")
@@ -1069,7 +1116,6 @@ class VentanaPrincipal(ctk.CTk):
             ctk.set_default_color_theme(self.TEMA_SELECCIONADO)
             ctk.set_appearance_mode(self.MODO_APARIENCIA)
 
-
     def guardar_configuracion_tema(self, nuevo_tema=None):
         """Guarda el tema y modo de apariencia en el archivo JSON y los aplica."""
         if nuevo_tema in estilos.TEMAS_COLOR_DEFAULT:
@@ -1086,7 +1132,6 @@ class VentanaPrincipal(ctk.CTk):
                 "FUENTE": estilos.FUENTE_PRINCIPAL,
             }, f, indent=4)
 
-
     def guardar_configuracion_fondo(self, nuevo_modo):
         """Guarda el modo de apariencia (dark/light) en el archivo JSON."""
         if nuevo_modo:
@@ -1099,7 +1144,6 @@ class VentanaPrincipal(ctk.CTk):
                 "MODO_APARIENCIA": self.MODO_APARIENCIA,
                 "FUENTE": estilos.FUENTE_PRINCIPAL,
             }, f, indent=4)
-
 
     def guardar_configuracion_fuente(self, nueva_fuente):
         """Guarda la fuente seleccionada en el archivo JSON."""

@@ -1,11 +1,13 @@
-import customtkinter as ctk
-import tkinter as tk
 
-class ElegantTooltip:
+import customtkinter as ctk
+import estilos
+
+class Tooltip:
     def __init__(self, widget, texto, fg_color="#333", text_color="#fff", delay=500):
         self.widget = widget
         self.texto = texto
         self.fg_color = fg_color
+        self.font = estilos.FUENTE_PEQUEÑA
         self.text_color = text_color
         self.delay = delay
         self.tooltip = None
@@ -35,6 +37,7 @@ class ElegantTooltip:
             text=self.texto,
             fg_color=self.fg_color,
             text_color=self.text_color,
+            font=self.font,
             corner_radius=8,
             padx=10,
             pady=5
@@ -55,19 +58,3 @@ class ElegantTooltip:
         if self.tooltip and self.tooltip.winfo_exists():
             self.tooltip.destroy()
             self.tooltip = None
-
-# ---------------------------
-# Ejemplo de uso
-app = ctk.CTk()
-app.geometry("400x300")
-
-boton1 = ctk.CTkButton(app, text="Botón 1")
-boton1.grid(row=0, column=0, padx=50, pady=50)
-
-boton2 = ctk.CTkButton(app, text="Botón 2")
-boton2.grid(row=1, column=0, padx=50, pady=50)
-
-ElegantTooltip(boton1, "Tooltip para Botón 1", delay=700)
-ElegantTooltip(boton2, "Tooltip para Botón 2", delay=700)
-
-app.mainloop()
