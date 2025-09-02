@@ -864,6 +864,9 @@
   ('estilos',
    'C:\\Users\\EDMG0\\Documents\\Proyectos_python\\Habit_Traker_2.0\\estilos.py',
    'PYMODULE'),
+  ('fechas',
+   'C:\\Users\\EDMG0\\Documents\\Proyectos_python\\Habit_Traker_2.0\\fechas.py',
+   'PYMODULE'),
   ('fileinput',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\\lib\\fileinput.py',

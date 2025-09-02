@@ -944,8 +944,11 @@ class VentanaPrincipal(ctk.CTk):
                     dia_semana_str = dia_semana.strftime("%Y-%m-%d")
                     dia_dic[dia_semana_str] = dia_indic
                 indice_dia = dia_dic[fecha_hoy_str]
+                if habit["dias_ejecucion"][indice_dia] == False:
+                    boton.pack_forget()
 
-                if completado or habit["dias_ejecucion"][indice_dia] == False:
+
+                if completado :
                     boton.configure(text=f"{nombre} - Completado!", state="disabled")
 
                 self.habitos_creados.add(nombre)
