@@ -1,5 +1,6 @@
 import customtkinter as ctk 
 from CTkMessagebox import CTkMessagebox
+from Tooltip import Tooltip
 import estilos
 class VentanaEliminarHabito:
     def __init__(self, master,db_objeto,fecha_objeto):
@@ -91,6 +92,11 @@ class VentanaEliminarHabito:
                 boton.pack(fill="x", pady=1, padx=2)
 
                 self.botones_habitos[nombre] = boton
+
+                 # 🔹 Agregar tooltip con la descripción del hábito
+                descripcion = habit.get("descripcion", "Sin descripción")
+                Tooltip(boton, descripcion)
+
                 self.habitos_creados.add(nombre)
 
     def evento_eliminar_habito_selec(self, habit_seleccionado):

@@ -13,7 +13,7 @@ class VentanaFuente(ctk.CTkToplevel):
         self.grab_set() 
         pantalla_ancho = self.winfo_screenwidth()
         pantalla_alto = self.winfo_screenheight()
-        ancho, alto = 400, 200
+        ancho, alto = 400, 400
         x = (pantalla_ancho // 2) - (ancho // 2) + 143
         y = (pantalla_alto // 2) - (alto // 2)
         self.geometry(f"{ancho}x{alto}+{x}+{y}")
