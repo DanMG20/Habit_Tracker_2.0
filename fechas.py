@@ -71,14 +71,8 @@ class fechas():
         return dias_actuales
     #----------------------------------------------CALCULO RENDIMIENTO--------------------------------------
     def calcular_rendimiento_semanal(self):
-        """
-        Calcula y guarda el rendimiento semanal de cumplimiento de hábitos en porcentaje,
-        sin contar días anteriores a la creación del hábito y sin contar días no configurados para ejecución.
-        """
         ejecuciones = self.db_objeto.cargar_ejecuciones()
-
-        # Ajustar el inicio de la semana al domingo
-        inicio_semana = self.inicio_semana()
+        inicio_semana = self.inicio_semana()  # Domingo
         fin_semana = inicio_semana + timedelta(days=6)
 
         habitos_totales = 0
@@ -86,37 +80,30 @@ class fechas():
 
         for habit in self.db_objeto.habitos:
             fecha_creacion = datetime.strptime(habit["Fecha_creacion"], "%Y-%m-%d").date()
+            dias_ejecucion = habit["dias_ejecucion"]  # lista de 7 elementos [0|1]
 
-            # Iterar por cada día de la semana
-            for dia_indic in range(7):
-                dia_semana = inicio_semana + timedelta(days=dia_indic)
-                dia_semana_str = dia_semana.strftime("%Y-%m-%d")
-                dia_ejecucion = habit["dias_ejecucion"][dia_indic]
+            for i in range(7):
+                dia_semana = inicio_semana + timedelta(days=i)
+                if dia_semana.date() < fecha_creacion:
+                    continue  # Ignorar días antes de la creación
 
-                # Ignorar días antes de la fecha de creación
-                if dia_semana.day < fecha_creacion.day:
-                    continue
-
-                if dia_ejecucion == 1:  # Día en el que el hábito debe ejecutarse
+                # Obtener índice correcto según weekday: domingo=0, lunes=1, ...
+                # Si tu lista empieza en lunes, ajusta: weekday=dia_semana.weekday()
+                if dias_ejecucion[i] == 1:  # Día programado
                     habitos_totales += 1
-                    # Verificar si se cumplió
+                    # Buscar si se cumplió
                     ejecucion = next(
-                        (e for e in ejecuciones if
-                        e["nombre_habito"] == habit["nombre_habito"] and e["fecha_ejecucion"] == dia_semana_str),
+                        (e for e in ejecuciones if e["nombre_habito"] == habit["nombre_habito"]
+                        and e["fecha_ejecucion"] == dia_semana.strftime("%Y-%m-%d")),
                         None
                     )
-                    if ejecucion and ejecucion["completado"]:
+                    if ejecucion and ejecucion.get("completado", False):
                         habitos_cumplidos += 1
 
         rendimiento = (habitos_cumplidos / habitos_totales * 100) if habitos_totales > 0 else 0
         rendimiento_redondeado = round(rendimiento)
-        rendimiento_data = {
-            "inicio_semana": inicio_semana.strftime("%Y-%m-%d"),
-            "fin_semana": fin_semana.strftime("%Y-%m-%d"),
-            "rendimiento": rendimiento
-        }
-
         return rendimiento_redondeado
+
     
 
 

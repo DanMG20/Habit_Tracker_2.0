@@ -49,7 +49,7 @@ class VentanaAgregarFrase(ctk.CTkToplevel):
         y = (pantalla_alto // 2) - (alto // 2)
         self.geometry(f"{ancho}x{alto}+{x}+{y}")
         self.title("Agregar nueva frase")
-        self.iconbitmap(obtener_direccion_icono_top())
+        
 
         ctk.CTkLabel(self, font=estilos.FUENTE_PEQUEÑA, text="Frase:").pack(pady=(10, 0))
         self.entry_frase = ctk.CTkEntry(self, font=estilos.FUENTE_PEQUEÑA, width=350)
@@ -69,6 +69,7 @@ class VentanaAgregarFrase(ctk.CTkToplevel):
             command=self.guardar_frase
         )
         btn_guardar.pack(pady=10)
+        self.update_idletasks() 
 
     def guardar_frase(self):
         frase_texto = self.entry_frase.get().strip()

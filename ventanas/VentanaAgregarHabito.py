@@ -301,7 +301,9 @@ class VentanaAgregarHabito:
         if not True in valores:
             self.evento_habito_sin_ejecuciones()
         else:
+            #obtener descripcion
             descripcion = self.cuadro_texto_descripcion.get("0.0","end-1c")
+            #crear el habito en base de datos
             self.db_objeto.crear_habito(self.entry_nombre.get(), valores,self.color_seleccionado,descripcion)
             self.entry_nombre.delete(0,"end")
             self.evento_btn_cancelar()

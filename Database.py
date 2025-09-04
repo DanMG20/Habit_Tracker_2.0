@@ -1,54 +1,75 @@
 import os
+import sys
 import json
+import shutil
+import random
 from datetime import datetime, timedelta
 from CTkMessagebox import CTkMessagebox
 import estilos
-import shutil
-from direcciones import resource_path
-import random
 
+#------------------------ RESOURCE PATH ------------------------
+def resource_path(relative_path):
+    """
+    Devuelve la ruta absoluta al recurso.
+    Funciona con PyInstaller (.exe) y con .py
+    """
+    try:
+        # PyInstaller crea una carpeta temporal _MEIPASS
+        base_path = sys._MEIPASS
+    except AttributeError:
+        # Durante desarrollo
+        base_path = os.path.dirname(__file__)
+    return os.path.join(base_path, relative_path)
+
+#------------------------ DATABASE CLASS ------------------------
 class Database:
     def __init__(self, master):
         self.master = master
 
-        # Carpeta de usuario para archivos modificables
+        # Carpeta APPDATA
         self.APPDATA_DIR = os.path.join(os.environ['APPDATA'], 'Habit Tracker')
         os.makedirs(self.APPDATA_DIR, exist_ok=True)
 
-        # Rutas de archivos modificables
+        # Archivos en APPDATA
         self.habitos_file = os.path.join(self.APPDATA_DIR, 'Base_de_datos_habitos.json')
         self.registro_file = os.path.join(self.APPDATA_DIR, 'registro_habitos.json')
         self.frases_file = os.path.join(self.APPDATA_DIR, 'frases.json')
 
-        # Copiar archivos por defecto desde _internal si no existen
-        self._copiar_si_no_existe('json\\Base_de_datos_habitos.json', self.habitos_file)
-        self._copiar_si_no_existe('json\\frases.json', self.frases_file)
+        # Copiar archivos por defecto si no existen
+        self._copiar_si_no_existe('json/Base_de_datos_habitos.json', self.habitos_file)
+        self._copiar_si_no_existe('json/frases.json', self.frases_file)
 
+        # Cargar datos
+        self.cargar_frases_random()
         self.habitos = self.cargar_habitos()
 
+    #------------------------ UTIL ----------------------------
     def _copiar_si_no_existe(self, archivo_origen, archivo_destino):
+        """
+        Copia archivo por defecto a APPDATA solo si no existe.
+        """
         if not os.path.exists(archivo_destino):
             origen = resource_path(archivo_origen)
             if os.path.exists(origen):
                 shutil.copy(origen, archivo_destino)
+                print(f"✅ Copiado {origen} a {archivo_destino}")
             else:
-                with open(archivo_destino, 'w') as f:
-                    json.dump([], f)
+                print(f"⚠️ No se encontró el archivo origen: {origen}")
 
-    #-------------------------- HÁBITOS -----------------------------
+    #------------------------ HÁBITOS --------------------------
     def cargar_habitos(self):
         if not os.path.exists(self.habitos_file):
             return []
-        with open(self.habitos_file, "r") as archivo:
+        with open(self.habitos_file, "r", encoding='utf-8') as archivo:
             try:
                 return json.load(archivo)
             except json.JSONDecodeError:
-                print("Archivo corrupto, voy a reescribir el archivo")
+                print("Archivo de hábitos corrupto, retornando lista vacía")
                 return []
 
     def guardar_habitos(self):
-        with open(self.habitos_file, "w") as archivo:
-            json.dump(self.habitos, archivo, indent=4)
+        with open(self.habitos_file, "w", encoding='utf-8') as archivo:
+            json.dump(self.habitos, archivo, indent=4, ensure_ascii=False)
 
     def crear_habito(self, nombre_habito_nuevo, dias_ejecucion, color, descripcion):
         fecha_creacion_string = str(datetime.now().date())
@@ -70,19 +91,19 @@ class Database:
         self.guardar_habitos()
         print(f"El hábito '{nombre_habito_nuevo}' ha sido creado con éxito.")
 
-    #------------------------ EJECUCIONES ---------------------------
+    #------------------------ EJECUCIONES -----------------------
     def cargar_ejecuciones(self):
         if not os.path.exists(self.registro_file):
             return []
-        with open(self.registro_file, 'r') as f:
+        with open(self.registro_file, 'r', encoding='utf-8') as f:
             try:
                 return json.load(f)
             except json.JSONDecodeError:
                 return []
 
     def guardar_ejecuciones(self, ejecuciones):
-        with open(self.registro_file, 'w') as f:
-            json.dump(ejecuciones, f, indent=4)
+        with open(self.registro_file, 'w', encoding='utf-8') as f:
+            json.dump(ejecuciones, f, indent=4, ensure_ascii=False)
 
     def registrar_ejecucion_habito(self, nombre_habito):
         fecha_actual = datetime.now().strftime("%Y-%m-%d")
@@ -130,7 +151,7 @@ class Database:
                       message=("Éxito", f"Se registró como completado el hábito '{nombre_habito}' para ayer."),
                       icon="check", option_1="Aceptar")
 
-    #------------------------ RESET ----------------------------------
+    #------------------------ RESET --------------------------------
     def resetear_archivos(self):
         msg = CTkMessagebox(
             master=self.master,
@@ -145,22 +166,22 @@ class Database:
             return
 
         try:
-            # Archivos que se van a eliminar
             archivos_a_borrar = [
                 self.habitos_file,
                 self.registro_file,
                 self.frases_file,
                 os.path.join(self.APPDATA_DIR, 'configuracion.json'),
-                os.path.join(self.APPDATA_DIR, 'posicion_ventana.json')
+                os.path.join(self.APPDATA_DIR, 'posicion_ventana.json'),
+                os.path.join(self.APPDATA_DIR, 'frases.json')
             ]
 
             for archivo in archivos_a_borrar:
                 if os.path.exists(archivo):
                     os.remove(archivo)
 
-            # Copiar archivos por defecto desde _internal
-            self._copiar_si_no_existe('json\\Base_de_datos_habitos.json', self.habitos_file)
-            self._copiar_si_no_existe('json\\frases.json', self.frases_file)
+            # Copiar archivos por defecto
+            self._copiar_si_no_existe('json/Base_de_datos_habitos.json', self.habitos_file)
+            self._copiar_si_no_existe('json/frases.json', self.frases_file)
 
             CTkMessagebox(
                 master=self.master,
@@ -180,18 +201,41 @@ class Database:
                 message=f"No se pudo eliminar los archivos: {e}"
             )
 
-    #------------------------ FRASES ----------------------------------
+    #------------------------ FRASES --------------------------------
     def cargar_frases_random(self):
-        self._copiar_si_no_existe('json\\frases.json', self.frases_file)
-        with open(self.frases_file, 'r') as f:
-            frases = json.load(f)
-            self.frases = [f"{frase['frase']} - {frase['autor']}" for frase in frases]
+        # Si no existe el archivo de frases, lo creamos con las frases por defecto
+        if not os.path.exists(self.frases_file):
+            frases_por_defecto = [
+                {
+                    "frase": "Somos lo que hacemos repetidamente. La excelencia, entonces, no es un acto, sino un hábito.",
+                    "autor": "Aristóteles"
+                },
+                {
+                    "frase": "Lo que no se define, no se puede medir. Lo que no se mide, no se puede mejorar. Lo que no se mejora, se degrada siempre",
+                    "autor": "Lord Kelvin"
+                }
+            ]
+            with open(self.frases_file, 'w', encoding='utf-8') as f:
+                json.dump(frases_por_defecto, f, indent=4, ensure_ascii=False)
 
+        # Cargar frases desde el archivo
+        try:
+            with open(self.frases_file, 'r', encoding='utf-8') as f:
+                frases = json.load(f)
+        except (json.JSONDecodeError, FileNotFoundError) as e:
+            print(f"Error al leer el archivo de frases: {e}")
+            frases = []
+
+        # Guardar frases en memoria
+        self.frases = [f"{frase['frase']} - {frase['autor']}" for frase in frases]
+        
         if frases:
             frase_random = random.choice(frases)
-            self.frase_seleccionada = frase_random["frase"]
-            self.autor_frase = frase_random["autor"]
+            self.frase_seleccionada = frase_random.get("frase", "")
+            self.autor_frase = frase_random.get("autor", "")
         else:
+            self.frase_seleccionada = "No hay frases registradas."
+            self.autor_frase = ""
             print("No hay frases registradas.")
 
     def evento_eliminar_frase_selec(self, frase_seleccionada):
@@ -206,7 +250,7 @@ class Database:
             return
 
         if os.path.exists(self.frases_file):
-            with open(self.frases_file, 'r') as f:
+            with open(self.frases_file, 'r', encoding='utf-8') as f:
                 frases = json.load(f)
         else:
             frases = []
@@ -217,8 +261,8 @@ class Database:
         else:
             frases = [f for f in frases if f["frase"] != frase_seleccionada]
 
-        with open(self.frases_file, "w") as f:
-            json.dump(frases, f, indent=4)
+        with open(self.frases_file, "w", encoding='utf-8') as f:
+            json.dump(frases, f, indent=4,ensure_ascii=False)
 
         CTkMessagebox(
             master=self.master,
@@ -227,6 +271,9 @@ class Database:
             message=f"La frase '{frase_seleccionada}' ha sido eliminada."
         )
 
+        # Recargar frases y actualizar UI
         self.cargar_frases_random()
-        self.master.mostrar_frase()
-        self.master.generar_menu_frases()
+        if hasattr(self.master, "mostrar_frase"):
+            self.master.mostrar_frase()
+        if hasattr(self.master, "generar_menu_frases"):
+            self.master.generar_menu_frases()
