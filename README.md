@@ -1,7 +1,7 @@
 📌 Tracker de Hábitos
 
 Aplicación de escritorio ligera para seguimiento de hábitos diarios, diseñada para ayudar a formar y mantener rutinas productivas.
-Desarrollada en Python con Tkinter para la interfaz gráfica y SQLite para la base de datos.
+Desarrollada en Python con Tkinter para la interfaz gráfica y JSON para la base de datos.
 
 ✨ Características principales
 
@@ -41,10 +41,9 @@ Matplotlib (gráficas de progreso)
 
 ### Opción 1: Usar el instalador (recomendado)
 1. Descarga la última versión desde [este release](https://github.com/DanMG20/Habit_Tracker_2.0/releases/tag/1.0).
-2. En la sección **Assets**, baja el archivo `.zip` correspondiente.
-3. Extrae el contenido en una carpeta de tu computadora.
-4. Haz doble clic en `HabitTrackerInstaller.exe` para comenzar a instalar la aplicacion.
-5. Sigue las instrucciones.
+2. En la sección **Assets**, baja el archivo `HabitTrackerInstaller.exe`.
+3. Haz doble clic en `HabitTrackerInstaller.exe` para comenzar a instalar la aplicacion.
+4. Sigue las instrucciones.
 
 ### Opción 2: Ejecutar desde el código fuente
 1. Clona este repositorio:
