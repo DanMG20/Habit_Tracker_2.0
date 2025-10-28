@@ -822,6 +822,7 @@ class VentanaPrincipal(ctk.CTk):
             self.titulo_habitos_ayer_2.pack(pady=5)
 
         # 4️⃣ Crear botones solo para nuevos hábitos
+        fecha_ayer_str = self.fechas_objeto.DIA_AYER.strftime("%Y-%m-%d")
         for habit in self.db_objeto.habitos:
             nombre = habit["nombre_habito"]
             if nombre not in self.habitos_creados_ayer:
@@ -837,8 +838,7 @@ class VentanaPrincipal(ctk.CTk):
 
                 self.botones_habitos_ayer[nombre] = boton
 
-                # 5️⃣ Verificar si el hábito está completado hoy
-                fecha_ayer_str = self.fechas_objeto.DIA_AYER.strftime("%Y-%m-%d")
+                # 5️⃣ Verificar si el hábito está completado ayer
                 completado = any(
                     e["nombre_habito"] == nombre and 
                     e["fecha_ejecucion"] == fecha_ayer_str and 
@@ -846,19 +846,20 @@ class VentanaPrincipal(ctk.CTk):
                     for e in ejecuciones
                 )
 
-                          # Verificar si el habito NO puede ser ejecutado hoy 
-                dia_dic = {}
-                for dia_indic in range(7):
-                    dia_semana = self.inicio_semana + timedelta(days=dia_indic)
-                    dia_semana_str = dia_semana.strftime("%Y-%m-%d")
-                    dia_dic[dia_semana_str] = dia_indic
-                indice_dia = dia_dic[fecha_ayer_str]
-             
+                # 📅 Calcular índice de día (semana iniciando en domingo)
+                indice_dia = (self.fechas_objeto.DIA_AYER.weekday() + 1) % 7
 
-                if completado or habit["dias_ejecucion"][indice_dia] == False or habit["Fecha_creacion"] == datetime.now().date().strftime("%Y-%m-%d") :
+                # 🚫 Deshabilitar botón si ya fue completado, no toca ese día,
+                # o si el hábito se creó ayer
+                if (
+                    completado 
+                    or not habit["dias_ejecucion"][indice_dia] 
+                    or habit["Fecha_creacion"] == datetime.now().date().strftime("%Y-%m-%d")
+                ):
                     boton.configure(text=f"{nombre} - Completado!", state="disabled")
 
                 self.habitos_creados_ayer.add(nombre)
+
 
     def listar_habitos(self):   
         """Lista los nombres de los hábitos en el marco, agregando solo los nuevos y eliminando los que ya no existan."""

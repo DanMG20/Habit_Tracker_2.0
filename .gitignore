@@ -1,1 +1,6 @@
 HabitTrackerInstaller.exe
+__pycache/
+.venv/
+.github/
+dist/
+main.spec
