@@ -1,6 +1,7 @@
-HabitTrackerInstaller.exe
+build/
 __pycache/
 .venv/
 .github/
 dist/
 main.spec
+HabitTrackerInstaller.exe
